@@ -9,7 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { api } from "../../lib/axios";
+import { api } from "../../../lib/axios";
 import { MathRequest, MathResponse } from "shared/types/API";
 import { Dispatch, SetStateAction } from "react";
 
@@ -27,7 +27,7 @@ type MathFormProps = {
 export function MathForm({ setMathResult }: MathFormProps) {
     const form = useForm<FormValues>({
         resolver: zodResolver(schema),
-        defaultValues: { num1: 0, num2: 5 },
+        defaultValues: { num1: 3, num2: 5 },
     });
 
     async function postMath(data: MathRequest) {
