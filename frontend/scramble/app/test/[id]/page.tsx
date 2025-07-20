@@ -37,6 +37,7 @@ export default function Page() {
     } = useQuery({
         queryKey: ["ping"],
         queryFn: getPing,
+        retry: 0,
     });
 
     const {
@@ -53,7 +54,8 @@ export default function Page() {
     });
 
     const [mathResult, setMathResult] = useState(0);
-    const [chatMsgs, setChatMsgs] = useState<string[]>([]);
+
+    const [socketConnected, setSocketConnected] = useState(false);
 
     useEffect(() => {
         console.log(roomId, process.env.NEXT_PUBLIC_WS_URL, process.env.NEXT_PUBLIC_WS_PATH);
@@ -63,6 +65,14 @@ export default function Page() {
                 path: process.env.NEXT_PUBLIC_WS_PATH,
                 query: { roomId, userId },
                 transports: ["websocket"],
+            });
+
+            socket.on("connect", () => {
+                setSocketConnected(true);
+            });
+
+            socket.on("disconnect", () => {
+                setSocketConnected(false);
             });
         }
 
@@ -75,6 +85,17 @@ export default function Page() {
         };
     }, [roomId]);
 
+    const renderPingStatus = () => {
+        if (pingIsLoading) {
+            return <h1>Pinging...</h1>;
+        } else {
+            if (pingError) {
+                return <h1>Ping errored</h1>;
+            }
+            return <h1>Ping worked!</h1>;
+        }
+    };
+
     return (
         <div className="flex flex-col items-center gap-4 p-4">
             <h1>Lobby #{roomId}</h1>
@@ -86,7 +107,7 @@ export default function Page() {
                 <li>Post request with a body submitted via form</li>
                 <li>web socket chat room, with broadcast by id and user ids</li>
             </ul>
-            <h1>Ping: {ping?.message}</h1>
+            {renderPingStatus()}
             <div className="flex flex-row items-center gap-4">
                 <Button variant="default" disabled={randomNumIsFetching} onClick={() => randomNumRefetch()}>
                     Generate Number
@@ -96,14 +117,14 @@ export default function Page() {
             <MathForm setMathResult={setMathResult}></MathForm>
             <h1>Result was {mathResult}</h1>
 
-            {!socket ? (
-                <h1>Cannot connect to socket {":("}</h1>
-            ) : (
+            {socket && socketConnected ? (
                 <div>
                     <h1>SOCKET CONNECTED CHAT BELOW YOU ARE {userId}</h1>
                     <ChatMsgs socket={socket}></ChatMsgs>
                     <ChatInput socket={socket} />
                 </div>
+            ) : (
+                <h1>Cannot connect to socket {":("}</h1>
             )}
         </div>
     );
