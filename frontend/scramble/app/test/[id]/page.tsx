@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 
-import { Ping, RandomNumResponse } from "shared/types/API";
+import { PingResponse, RandomNumResponse, RedisConnectedResponse } from "shared/types/API";
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "../../../lib/axios";
@@ -13,8 +13,14 @@ import { io, Socket } from "socket.io-client";
 import ChatInput from "@/components/test/[id]/ChatInput";
 import ChatMsgs from "@/components/test/[id]/ChatMsgs";
 
-async function getPing(): Promise<Ping> {
+async function getPing(): Promise<PingResponse> {
     const res = await api.get("/ping");
+    return res.data;
+}
+
+async function getRedisConnection(): Promise<RedisConnectedResponse> {
+    const res = await api.get("/redis");
+    console.log("redis", await res.data);
     return res.data;
 }
 
@@ -25,6 +31,7 @@ async function getRandomNum(): Promise<RandomNumResponse> {
 
 var socket: Socket | null = null;
 var userId = Math.random().toString(36).substring(2, 10); // random 8 char string for user
+var page = "test_chat";
 
 export default function Page() {
     const params = useParams();
@@ -37,6 +44,12 @@ export default function Page() {
     } = useQuery({
         queryKey: ["ping"],
         queryFn: getPing,
+        retry: 0,
+    });
+
+    const { data: redisConnected } = useQuery({
+        queryKey: ["redisConnected"],
+        queryFn: getRedisConnection,
         retry: 0,
     });
 
@@ -58,12 +71,11 @@ export default function Page() {
     const [socketConnected, setSocketConnected] = useState(false);
 
     useEffect(() => {
-        console.log(roomId, process.env.NEXT_PUBLIC_WS_URL, process.env.NEXT_PUBLIC_WS_PATH);
         if (roomId) {
             console.log("trying to connect");
             socket = io(process.env.NEXT_PUBLIC_WS_URL, {
                 path: process.env.NEXT_PUBLIC_WS_PATH,
-                query: { roomId, userId },
+                query: { roomId, userId, page },
                 transports: ["websocket"],
             });
 
@@ -108,6 +120,7 @@ export default function Page() {
                 <li>web socket chat room, with broadcast by id and user ids</li>
             </ul>
             {renderPingStatus()}
+            <h1>Redis connected: {String(redisConnected?.connected)}</h1>
             <div className="flex flex-row items-center gap-4">
                 <Button variant="default" disabled={randomNumIsFetching} onClick={() => randomNumRefetch()}>
                     Generate Number
@@ -120,7 +133,7 @@ export default function Page() {
             {socket && socketConnected ? (
                 <div>
                     <h1>SOCKET CONNECTED CHAT BELOW YOU ARE {userId}</h1>
-                    <ChatMsgs socket={socket}></ChatMsgs>
+                    <ChatMsgs socket={socket} roomId={roomId}></ChatMsgs>
                     <ChatInput socket={socket} />
                 </div>
             ) : (

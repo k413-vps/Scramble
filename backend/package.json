@@ -15,9 +15,9 @@
         "cors": "^2.8.5",
         "dotenv": "^17.2.0",
         "express": "^5.1.0",
-        "socket.io": "^4.8.1",
-        "shared": "file:../shared"
-
+        "redis": "^5.6.0",
+        "shared": "file:../shared",
+        "socket.io": "^4.8.1"
     },
     "devDependencies": {
         "@types/dotenv": "^8.2.3",

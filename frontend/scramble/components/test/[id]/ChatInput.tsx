@@ -30,7 +30,7 @@ export default function ChatInput({ socket }: ChatInputProps) {
             message: data.msg,
         };
         console.log("emiting");
-        socket.emit("msg_to_server", socketRequest);
+        socket.emit("test_chat_msg_to_server", socketRequest);
         form.reset({ msg: "" });
     };
 

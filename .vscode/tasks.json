@@ -2,6 +2,33 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Run Redis Dev",
+            "type": "shell",
+            "command": "docker compose -p scramble_dev up",
+            "problemMatcher": {
+                "pattern": [
+                    {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": ".*Ready to accept connections.*"
+                }
+            },
+            "presentation": {
+                "panel": "new"
+            },
+            "options": {
+                "cwd": "deployment/dev"
+            },
+            "isBackground": true
+        },
+        {
             "label": "Run Backend Dev",
             "type": "shell",
             "command": "npm run dev",
@@ -12,7 +39,9 @@
             },
             "options": {
                 "cwd": "backend"
-            }
+            },
+            "dependsOn": ["Run Redis Dev"],
+            "dependsOrder": "sequence"
         },
         {
             "label": "Run Frontend Dev",

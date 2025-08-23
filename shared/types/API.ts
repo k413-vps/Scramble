@@ -1,4 +1,6 @@
-export interface Ping {
+import { TestMessageToClient } from "./SocketMessages";
+
+export interface PingResponse {
     message: string;
 }
 
@@ -13,4 +15,16 @@ export interface MathResponse {
 
 export interface RandomNumResponse {
     num: number;
+}
+
+export interface RedisConnectedResponse {
+    connected: boolean;
+}
+
+export interface ChatMsgsRequest {
+    roomId: string;
+}
+
+export interface ChatMsgsResponse {
+    messages: TestMessageToClient[];
 }

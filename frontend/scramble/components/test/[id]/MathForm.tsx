@@ -30,17 +30,22 @@ export function MathForm({ setMathResult }: MathFormProps) {
         defaultValues: { num1: 3, num2: 5 },
     });
 
-    async function postMath(data: MathRequest) {
+    async function postMath(data: MathRequest): Promise<MathResponse> {
         const res: MathResponse = (await api.post("/math", data)).data;
 
-        setMathResult(res.num);
+        return res
+    }
+
+
+    async function onMathSuccess(mathResponse: MathResponse) {
+        
+        setMathResult(mathResponse.num)
+
     }
 
     const mutation = useMutation({
         mutationFn: postMath,
-        // onSuccess: (data) => {
-        //     alert("Submitted: " + JSON.stringify(data));
-        // },
+        onSuccess: onMathSuccess,
     });
 
     const onSubmit = (data: FormValues) => {
