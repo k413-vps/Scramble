@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import cors from "cors";
 
 import dotenv from "dotenv";
+import path from "path";
 
 import {
     ChatMsgsRequest,
@@ -14,11 +15,15 @@ import {
     RedisConnectedResponse,
     ChatMsgsResponse,
 } from "shared/types/API";
+
 import { TestMessageToServer, TestMessageToClient } from "shared/types/SocketMessages";
 
 import { createClient, RedisClientType } from "redis";
 
-dotenv.config();
+const env = process.argv[2] || "dev";
+const envFile = `.env.${env}`;
+
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 const API_PATH = process.env.API_PATH;
 const WS_PATH = process.env.WS_PATH;
@@ -67,6 +72,7 @@ app.get(`${API_PATH}/ping`, (_, res) => {
     var result: PingResponse = {
         message: "/ping works",
     };
+    console.log("pinged");
     res.send(result);
 });
 
@@ -112,16 +118,13 @@ app.post(`${API_PATH}/math`, async (req, res) => {
 app.get(`${API_PATH}/chat_msgs/:roomId`, async (req: Request<ChatMsgsRequest>, res) => {
     // var request: ChatMsgsRequest = req.body;
     const roomId = req.params.roomId;
-    console.log("room id:", roomId);
-
 
     var messages = (await redisClient.json.get("test_chat", {
         path: `$.${roomId}`,
     })) as unknown as TestMessageToClient[][];
 
-    console.log("messages", messages);
     var result: ChatMsgsResponse = {
-        messages: messages[0] || [],
+        messages: messages[0],
     };
 
     res.send(result);
@@ -139,6 +142,12 @@ io.on("connection", async (socket) => {
     var roomId = socket.handshake.query.roomId as string;
     var userId = socket.handshake.query.userId as string;
     var page = socket.handshake.query.page as string;
+
+    if (page == "test_chat") {
+        redisClient.json.set("test_chat", `$.${roomId}`, [], {
+            NX: true,
+        });
+    }
 
     socket.join(roomId);
 

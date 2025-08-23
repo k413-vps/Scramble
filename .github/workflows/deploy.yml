@@ -1,0 +1,31 @@
+name: Deployment
+
+on:
+    workflow_dispatch:
+
+
+jobs:
+    deploy:
+        runs-on: self-hosted
+        
+        timeout-minutes: 20
+
+        steps:
+
+            # doing this instead of the actions/checkout because it makes it easier to change deployment manually, as well as setting env files
+        -   name: pull changes 
+            run: git pull
+            working-directory: /home/github-runner/projects/Scramble
+
+        
+        -   name: build frontend
+            run: docker buildx build --build-context frontend=. --build-context shared=../shared -f Dockerfile . -t frontend
+            working-directory: /home/github-runner/projects/Scramble/frontend
+        
+        -   name: build backend
+            run: docker buildx build --build-context backend=. --build-context shared=../shared -f Dockerfile . -t backend
+            working-directory: /home/github-runner/projects/Scramble/backend
+        
+        -   name: deploy
+            run: docker compose -p scramble_prod --env-file ../../backend/.env.prod  --env-file .env up -d
+            working-directory: /home/github-runner/projects/Scramble/deployment/prod

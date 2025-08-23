@@ -1,0 +1,51 @@
+services:
+  redis:
+    container_name: scramble_prod_redis
+    image: redis:latest
+    # ports:
+    #   - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - redis_data:/data
+
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+  backend:
+    container_name: scramble_prod_backend
+    image: backend
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:${BACKEND_PORT}${API_PATH}/ping"] # needs to be cmd-shell instead of cmd for the .env variables
+
+      interval: 1200s
+      timeout: 3s
+      retries: 2
+      start_period: 3s
+
+  frontend:
+    container_name: scramble_prod_frontend
+    image: frontend
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_EXPOSED_PORT}"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+
+
+volumes:
+  redis_data:

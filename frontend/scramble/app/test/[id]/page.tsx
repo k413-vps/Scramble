@@ -20,7 +20,6 @@ async function getPing(): Promise<PingResponse> {
 
 async function getRedisConnection(): Promise<RedisConnectedResponse> {
     const res = await api.get("/redis");
-    console.log("redis", await res.data);
     return res.data;
 }
 
@@ -29,16 +28,16 @@ async function getRandomNum(): Promise<RandomNumResponse> {
     return res.data;
 }
 
-var socket: Socket | null = null;
-var userId = Math.random().toString(36).substring(2, 10); // random 8 char string for user
-var page = "test_chat";
+let socket: Socket | null = null;
+const userId = Math.random().toString(36).substring(2, 10); // random 8 char string for user
+const page = "test_chat";
 
 export default function Page() {
     const params = useParams();
     const roomId = params.id;
 
     const {
-        data: ping,
+        // data: ping,
         isLoading: pingIsLoading,
         error: pingError,
     } = useQuery({
@@ -55,8 +54,8 @@ export default function Page() {
 
     const {
         data: randomNum,
-        isLoading: randomNumIsLoading,
-        error: randomNumError,
+        // isLoading: randomNumIsLoading,
+        // error: randomNumError,
         refetch: randomNumRefetch,
         isFetching: randomNumIsFetching,
         isSuccess: randomNumIsSuccess,
@@ -72,7 +71,6 @@ export default function Page() {
 
     useEffect(() => {
         if (roomId) {
-            console.log("trying to connect");
             socket = io(process.env.NEXT_PUBLIC_WS_URL, {
                 path: process.env.NEXT_PUBLIC_WS_PATH,
                 query: { roomId, userId, page },
@@ -93,7 +91,6 @@ export default function Page() {
                 socket.disconnect();
             }
 
-            console.log("disconnecting websocket");
         };
     }, [roomId]);
 

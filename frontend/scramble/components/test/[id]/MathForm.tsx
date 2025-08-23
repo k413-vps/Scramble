@@ -49,7 +49,7 @@ export function MathForm({ setMathResult }: MathFormProps) {
     });
 
     const onSubmit = (data: FormValues) => {
-        var request: MathRequest = {
+        const request: MathRequest = {
             num1: data.num1,
             num2: data.num2,
         };

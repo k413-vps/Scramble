@@ -1,2 +1,8 @@
-node_modules/
-src/
+dist
+node_modules
+.dockerignore
+.env.dev
+.gitignore
+Dockerfile
+nodemon.json
+

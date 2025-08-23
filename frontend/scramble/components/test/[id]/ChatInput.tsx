@@ -26,10 +26,9 @@ export default function ChatInput({ socket }: ChatInputProps) {
     });
 
     const onSubmit = (data: FormValues) => {
-        var socketRequest: TestMessageToServer = {
+        const socketRequest: TestMessageToServer = {
             message: data.msg,
         };
-        console.log("emiting");
         socket.emit("test_chat_msg_to_server", socketRequest);
         form.reset({ msg: "" });
     };

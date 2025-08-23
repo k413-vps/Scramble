@@ -1,0 +1,6 @@
+scramble/.next
+scramble/node_modules
+scramble/.env.local
+
+.dockerignore
+Dockerfile

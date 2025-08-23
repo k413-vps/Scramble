@@ -4,7 +4,7 @@
         {
             "label": "Run Redis Dev",
             "type": "shell",
-            "command": "docker compose -p scramble_dev up",
+            "command": "docker compose -p scramble_dev --env-file ../../backend/.env.dev up",
             "problemMatcher": {
                 "pattern": [
                     {
@@ -61,6 +61,45 @@
             "dependsOn": ["Run Backend Dev", "Run Frontend Dev"],
             "dependsOrder": "parallel",
             "problemMatcher": []
+        },
+        {
+            "label": "Build Frontend",
+            "type": "shell",
+            "command": "docker buildx build --build-context frontend=. --build-context shared=../shared -f Dockerfile . -t frontend",
+            "problemMatcher": [],
+            "presentation": {
+                "panel": "new",
+                "group": "build"
+            },
+            "options": {
+                "cwd": "frontend"
+            }
+        },
+        {
+            "label": "Build Backend",
+            "type": "shell",
+            "command": "docker buildx build --build-context backend=. --build-context shared=../shared -f Dockerfile . -t backend",
+            "problemMatcher": [],
+            "presentation": {
+                "panel": "new",
+                "group": "build"
+            },
+            "options": {
+                "cwd": "backend"
+            }
+        },
+        {
+            "label": "Run Prod",
+            "type": "shell",
+            "command": "docker compose -p scramble_prod --env-file ../../backend/.env.prod  --env-file .env up",
+            "problemMatcher": [],
+            "presentation": {
+                "panel": "new"
+            },
+            "dependsOn": ["Build Backend", "Build Frontend"],
+            "options": {
+                "cwd": "deployment/prod"
+            }
         }
     ]
 }
