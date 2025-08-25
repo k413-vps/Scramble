@@ -2,9 +2,10 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Run Redis Dev",
+            "label": "Run Databases Dev",
             "type": "shell",
-            "command": "docker compose -p scramble_dev --env-file ../../backend/.env.dev up",
+            // force recreate restarts the redis instance so isBackground is satisfied
+            "command": "docker compose -p scramble_dev --env-file ../../backend/.env.dev --env-file .env up --force-recreate",
             "problemMatcher": {
                 "pattern": [
                     {
@@ -15,9 +16,8 @@
                     }
                 ],
                 "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": ".*",
-                    "endsPattern": ".*Ready to accept connections.*"
+                    "beginsPattern": ".", 
+                    "endsPattern": "Ready to accept connections" //redis
                 }
             },
             "presentation": {
@@ -40,7 +40,7 @@
             "options": {
                 "cwd": "backend"
             },
-            "dependsOn": ["Run Redis Dev"],
+            "dependsOn": ["Run Databases Dev"],
             "dependsOrder": "sequence"
         },
         {

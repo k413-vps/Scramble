@@ -14,4 +14,6 @@ COPY --from=backend . .
 
 RUN npm run build
 
+RUN npx drizzle-kit generate
+
 CMD ["npm", "run", "start"]

@@ -27,14 +27,13 @@ export default function ChatMsgs({ socket, roomId }: ChatMsgsProps) {
     const queryClient = useQueryClient();
 
     const handleMessage = (msg: TestMessageToClient) => {
-        console.log(`recieved msg from ${msg.userId}: ${msg.message}`);
+        console.log(`recieved msg from ${msg.username}: ${msg.message}`);
 
         queryClient.setQueryData(["chatMsgs"], (oldData: TestMessageToClient[]): TestMessageToClient[] => {
             return [...oldData, msg];
         });
     };
 
-    
     useEffect(() => {
         socket.on("test_chat_msg_to_client", handleMessage);
 
@@ -65,7 +64,7 @@ export default function ChatMsgs({ socket, roomId }: ChatMsgsProps) {
                 {chatMsgs?.map((item, index) => (
                     <Card key={index}>
                         <CardHeader>
-                            <CardTitle>{item.userId}</CardTitle>
+                            <CardTitle>{item.username}</CardTitle>
                         </CardHeader>
                         <CardContent>{item.message}</CardContent>
                     </Card>
