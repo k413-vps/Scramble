@@ -11,6 +11,7 @@ import { Socket } from "socket.io-client";
 
 type ChatInputProps = {
     socket: Socket;
+    username: string;
 };
 
 const schema = z.object({
@@ -19,7 +20,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export default function ChatInput({ socket }: ChatInputProps) {
+export default function ChatInput({ socket, username }: ChatInputProps) {
     const form = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: { msg: "" },
@@ -28,6 +29,7 @@ export default function ChatInput({ socket }: ChatInputProps) {
     const onSubmit = (data: FormValues) => {
         const socketRequest: TestMessageToServer = {
             message: data.msg,
+            username,
         };
         socket.emit("test_chat_msg_to_server", socketRequest);
         form.reset({ msg: "" });
