@@ -9,42 +9,20 @@ function handleInvalidLogin(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
-    console.log("its the middleware :)");
-    console.log("url", request.url);
+    const allCookies = request.headers.get("cookie");
 
-    const token = request.cookies.get("scramble.session_token");
-
-    // try {
-    //     await api.get(`${process.env.NEXT_PUBLIC_BACKEND_AUTH_PATH}/ping`, {
-    //         headers: {
-    //             Cookie: `scramble.session_token=${token!.value}`,
-    //         },
-    //     });
-    // } catch (error) {
-    //     // axios throws exception when response is 401
-    //     const loginUrl = new URL("/login", request.url);
-    //     loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
-    //     console.log("test");
-    //     console.log(token);
-    //     console.log(error);
-    //     return NextResponse.redirect(loginUrl);
-    // }
-
-    if (token == undefined) {
+    if (allCookies == null) {
         return handleInvalidLogin(request);
     }
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_BACKEND_AUTH_PATH}/ping`;
 
-    console.log(url);
     const res = await fetch(url, {
         method: "GET",
         headers: {
-            Cookie: `scramble.session_token=${token!.value}`,
+            Cookie: allCookies,
         },
     });
-    console.log("fetch url", url);
-    console.log("response", await res.json());
 
     if (!res.ok) {
         return handleInvalidLogin(request);
@@ -55,5 +33,4 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: ["/create"],
-    // runtime: "nodejs", // need this for axios i believe
 };
