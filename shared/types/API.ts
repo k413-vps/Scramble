@@ -28,3 +28,7 @@ export interface ChatMsgsRequest {
 export interface ChatMsgsResponse {
     messages: TestMessageToClient[];
 }
+
+export interface ErrorResponse {
+    errMsg: string;
+}

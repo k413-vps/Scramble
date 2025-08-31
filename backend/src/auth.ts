@@ -38,4 +38,7 @@ export const auth = betterAuth({
     },
 
     trustedOrigins: [frontendURL],
+    advanced: {
+        cookiePrefix: "scramble",
+    },
 });

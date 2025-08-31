@@ -12,12 +12,18 @@ import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import ChatInput from "@/components/test/[id]/ChatInput";
 import ChatMsgs from "@/components/test/[id]/ChatMsgs";
-import Auth from "@/components/test/[id]/Auth";
+import Auth from "@/components/test/[id]/AuthTest";
 
 import authClient from "@/lib/auth_client";
+import Link from "next/link";
 
 async function getPing(): Promise<PingResponse> {
     const res = await api.get("/ping");
+    return res.data;
+}
+
+async function getAuthPing(): Promise<PingResponse> {
+    const res = await api.get(`${process.env.NEXT_PUBLIC_BACKEND_AUTH_PATH}/ping`);
     return res.data;
 }
 
@@ -45,6 +51,16 @@ export default function Page() {
     } = useQuery({
         queryKey: ["ping"],
         queryFn: getPing,
+        retry: 0,
+    });
+
+    const {
+        // data: ping,
+        isLoading: authPingIsLoading,
+        error: authPingError,
+    } = useQuery({
+        queryKey: ["authPing"],
+        queryFn: getAuthPing,
         retry: 0,
     });
 
@@ -121,16 +137,32 @@ export default function Page() {
     const renderPingStatus = () => {
         if (pingIsLoading) {
             return <h1>Pinging...</h1>;
-        } else {
-            if (pingError) {
-                return <h1>Ping errored</h1>;
-            }
-            return <h1>Ping worked!</h1>;
         }
+
+        if (pingError) {
+            return <h1>Ping errored</h1>;
+        }
+
+        return <h1>Ping worked!</h1>;
+    };
+
+    const renderAuthPingStatus = () => {
+        if (authPingIsLoading) {
+            return <h1>Auth Pinging...</h1>;
+        }
+
+        if (authPingError) {
+            return <h1>Auth Ping errored</h1>;
+        }
+
+        return <h1>Auth Ping worked!</h1>;
     };
 
     return (
         <div className="flex flex-col items-center gap-4 p-4">
+            <Button>
+                <Link href="/">back</Link>
+            </Button>
             <Auth
                 roomId={roomId}
                 name={session?.user.name}
@@ -142,13 +174,18 @@ export default function Page() {
             <h1>Lobby #{roomId}</h1>
             <h2>This is a test page to test the connections between front and backend. Right now, it tests:</h2>
             <ul className="list-disc pl-4">
+                <li>Sign in and Sign out</li>
+                <li>Profile Details</li>
                 <li>Getting lobby # from url</li>
                 <li>Get request</li>
+                <li>Protected Get request</li>
+                <li>Connected to redis</li>
                 <li>Post request without a body</li>
                 <li>Post request with a body submitted via form</li>
-                <li>web socket chat room, with broadcast by id and user ids</li>
+                <li>web socket chat room, with broadcast by room id and user ids</li>
             </ul>
             {renderPingStatus()}
+            {renderAuthPingStatus()}
             <h1>Redis connected: {String(redisConnected?.connected)}</h1>
             <div className="flex flex-row items-center gap-4">
                 <Button variant="default" disabled={randomNumIsFetching} onClick={() => randomNumRefetch()}>

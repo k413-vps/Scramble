@@ -12,10 +12,13 @@ export interface Game {
     dictionary: Dictionary;
     wildMode: boolean; // are tiles permanently boosted?
     points: LetterPoints;
+    enableEnchantments: boolean;
+    enableSpecialActions: boolean;
+    public: boolean;
 }
 
 export interface Blocked {
-    playerId: string
+    playerId: string;
 }
 
 export enum Enhancement {
@@ -80,4 +83,3 @@ export type Dictionary = {
 export type LetterPoints = {
     [character: string]: number;
 };
-

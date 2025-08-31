@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function CreateGameButton() {
+export default function LoginButton() {
     return (
         <div>
             <Button>
-                <Link href="/create">Create Game</Link>
+                <Link href="/login">Login</Link>
             </Button>
         </div>
     );
