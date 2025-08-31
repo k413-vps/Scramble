@@ -2,6 +2,7 @@ import CreateGameButton from "@/components/root/CreateGameButton";
 import FindGameButton from "@/components/root/FindGameButton";
 import { JoinGameForm } from "@/components/root/JoinGameForm";
 import LoginButton from "@/components/root/LoginButton";
+import ThemeToggle from "@/components/ThemeToggle";
 
 import Link from "next/link";
 
@@ -14,6 +15,7 @@ export default function Home() {
                 <CreateGameButton></CreateGameButton>
                 <FindGameButton></FindGameButton>
                 <LoginButton></LoginButton>
+                <ThemeToggle></ThemeToggle>
             </div>
 
             {/* <h1 className="text-2xl font-semibold mb-6">Have a game code already?</h1> */}

@@ -48,11 +48,11 @@ function Login() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center min-h-screen">
             <Card className="w-full max-w-md p-6 shadow-2xl">
                 <CardContent className="flex flex-col items-center gap-4">
                     <h1 className="text-2xl font-bold">Please sign in to continue</h1>
-                    <p className="text-muted-foreground">thank you</p>
+                    <h2 className="text-muted-foreground">thank you</h2>
 
                     <Button onClick={handleGoogleLogin} className="w-full" disabled={loading} variant="outline">
                         <LogIn className="mr-2 h-4 w-4" />
