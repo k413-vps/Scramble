@@ -43,6 +43,8 @@ export async function middleware(request: NextRequest) {
             Cookie: `scramble.session_token=${token!.value}`,
         },
     });
+    console.log("fetch url", url);
+    console.log("response", await res.json());
 
     if (!res.ok) {
         return handleInvalidLogin(request);
