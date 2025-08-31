@@ -21,6 +21,7 @@ import {
     RandomNumResponse,
     RedisConnectedResponse,
     ChatMsgsResponse,
+    ErrorResponse,
 } from "shared/types/API";
 
 import { TestMessageToServer, TestMessageToClient } from "shared/types/SocketMessages";
@@ -34,7 +35,7 @@ async function main() {
     dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
     const API_PATH = process.env.API_PATH;
-    const AUTH_PATH = process.env.AUTH_PATH;
+    const PROTECTED_PATH = process.env.PROTECTED_PATH!;
 
     const WS_PATH = process.env.WS_PATH;
     const FRONTEND_URL = process.env.FRONTEND_URL;
@@ -59,6 +60,24 @@ async function main() {
     // app.use("/api/auth", auth.handler);
 
     app.use(express.json());
+
+    app.use(PROTECTED_PATH, async (req, res, next) => {
+        const session = await auth.api.getSession({
+            headers: fromNodeHeaders(req.headers),
+        });
+
+
+        if (session == null) {
+            const err: ErrorResponse = {
+                errMsg: "Unauthorized",
+            };
+
+            res.status(401).send(err);
+            return;
+        }
+
+        next();
+    });
 
     const redisUrl = `redis://default:${REDIS_PWD}@${REDIS_IP}:${REDIS_PORT}`;
 
@@ -90,10 +109,20 @@ async function main() {
 
     // await migrate(db, { migrationsFolder: "drizzle" });
 
-    app.get(`${API_PATH}/ping`, (_, res) => {
+    app.get(`${PROTECTED_PATH}/ping`, async (req, res) => {
+        const result: PingResponse = {
+            message: "/auth ping works",
+        };
+
+        console.log("auth pinged");
+        res.send(result);
+    });
+
+    app.get(`${API_PATH}/ping`, async (req, res) => {
         const result: PingResponse = {
             message: "/ping works",
         };
+
         console.log("pinged");
         res.send(result);
     });

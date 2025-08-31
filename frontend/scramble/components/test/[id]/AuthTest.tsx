@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import authClient from "@/lib/auth_client";
 import Image from "next/image";
@@ -27,18 +29,18 @@ export default function Auth({ roomId, name, profileUrl, isPending }: AuthProps)
     function renderInfo() {
         if (isPending) {
             return <h1>Loading Profile info</h1>;
-        } else {
-            if (name) {
-                return (
-                    <div>
-                        <h1>Welcome {name}!</h1>
-                        <Image src={profileUrl!} alt="this u?" width={125} height={75} />
-                    </div>
-                );
-            } else {
-                return <h1>u are not signed in :/ </h1>;
-            }
         }
+
+        if (name) {
+            return (
+                <div>
+                    <h1>Welcome {name}!</h1>
+                    <Image src={profileUrl!} alt="this u?" width={125} height={75} />
+                </div>
+            );
+        }
+
+        return <h1>u are not signed in :/ </h1>;
     }
 
     return (

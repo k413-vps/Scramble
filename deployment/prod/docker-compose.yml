@@ -34,7 +34,7 @@ services:
       interval: 1200s
       timeout: 3s
       retries: 2
-      start_period: 3s
+      start_period: 5s
 
   frontend:
     container_name: scramble_prod_frontend
