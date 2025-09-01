@@ -4,13 +4,19 @@ FROM node:20-alpine
 
 RUN npm install -g typescript
 
+WORKDIR /app/shared
+
+COPY --from=shared package.json ./
+
+RUN npm install
+
+COPY --from=shared . .
+
+RUN tsc 
+
 WORKDIR /app/backend
 
-COPY --from=shared . ../shared
-
-RUN tsc -p ../shared
-
-COPY package*.json ./
+COPY --from=backend package.json ./
 
 RUN npm install
 
