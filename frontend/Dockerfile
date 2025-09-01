@@ -2,9 +2,13 @@
 
 FROM node:20-alpine
 
+RUN npm install -g typescript
+
 WORKDIR /app/frontend/scramble
 
 COPY --from=shared . ../../shared
+
+RUN tsc -p ../../shared/
 
 COPY scramble/package*.json ./
 
