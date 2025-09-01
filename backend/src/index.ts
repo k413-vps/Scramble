@@ -22,6 +22,8 @@ import {
     RedisConnectedResponse,
     ChatMsgsResponse,
     ErrorResponse,
+    CreateGameRequest,
+    CreateGameResponse,
 } from "shared/types/API";
 
 import { TestMessageToServer, TestMessageToClient } from "shared/types/SocketMessages";
@@ -29,8 +31,9 @@ import { TestMessageToServer, TestMessageToClient } from "shared/types/SocketMes
 import { createClient, RedisClientType } from "redis";
 
 import { generateSeed } from "shared/functions/util";
+import { createRoom, RedisSetup } from "./util/RedisHelper";
+import { parseCreateGameRequest } from "./util/APIParse";
 
-console.log("seed", generateSeed());
 async function main() {
     const env = process.argv[2] || "dev";
     const envFile = `.env.${env}`;
@@ -60,7 +63,6 @@ async function main() {
     );
 
     app.all("/api/auth/*splat", toNodeHandler(auth));
-    // app.use("/api/auth", auth.handler);
 
     app.use(express.json());
 
@@ -83,31 +85,8 @@ async function main() {
 
     const redisUrl = `redis://default:${REDIS_PWD}@${REDIS_IP}:${REDIS_PORT}`;
 
-    let redisClient: RedisClientType;
-    let redisConnected: boolean;
+    let [redisClient, redisConnected] = RedisSetup(redisUrl);
 
-    try {
-        redisClient = createClient({
-            url: redisUrl,
-        });
-
-        redisClient.connect();
-
-        redisConnected = true;
-        console.log("connected to redis");
-
-        redisClient.json.set(
-            "test_chat",
-            "$",
-            {},
-            {
-                NX: true,
-            }
-        ); // create empty dictionary, if it doesn't exist already
-    } catch (err) {
-        redisConnected = false;
-        console.log("can't connect to redis :/");
-    }
 
     // await migrate(db, { migrationsFolder: "drizzle" });
 
@@ -117,6 +96,17 @@ async function main() {
         };
 
         console.log("auth pinged");
+        res.send(result);
+    });
+
+    app.post(`${PROTECTED_PATH}/create`, async (req: Request<CreateGameRequest>, res) => {
+        const game = parseCreateGameRequest(req.body);
+        const roomId = await createRoom(redisClient, game);
+
+        const result: CreateGameResponse = {
+            roomId,
+        };
+
         res.send(result);
     });
 

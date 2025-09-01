@@ -1,1 +1,0 @@
-Lists taken from [free scrabble dictionary](https://www.freescrabbledictionary.com/word-lists/)

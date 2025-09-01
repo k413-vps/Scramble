@@ -1,20 +1,62 @@
+import { LetterCount, LetterPoints } from "./misc";
+import { Spell } from "./spells";
 import { Tile } from "./tiles";
 
-export interface Game {
-    players: Array<Player>;
+export interface ServerSideGame {
+    players: ServerSidePlayer[]; // player turn goes in this order
     board: Array<Array<Tile | null | Blocked>>;
-    enhancements: Array<Array<Enhancement>>;
+    enhancements: Enhancement[][];
     currentPlayerId: string;
-    bag: Tile[];
-    turnHistory: Action[];
-    timePerTurn: number; // epoch time
+    bag: string[];
+    turnHistory: [Action, string][]; // array of tuples
+    timePerTurn: number; // epoch time, 0 for unlimited
     timeOfLastTurn: number; // epoch time
-    dictionary: Dictionary;
+    dictionary: DictionaryEnum;
     wildMode: boolean; // are tiles permanently boosted?
     points: LetterPoints;
     enableEnchantments: boolean;
     enableSpecialActions: boolean;
     public: boolean;
+    handSize: number;
+    seed: number;
+    randomSeed: boolean;
+}
+
+export interface ClientSideGame {
+    players: ClientSidePlayer[]; // player turn goes in this order
+    board: Array<Array<Tile | null | Blocked>>;
+    enhancements: Enhancement[][];
+    currentPlayerId: string;
+    hand: Tile[];
+    turnHistory: [Action, string][]; // array of tuples
+    timePerTurn: number; // epoch time, 0 for unlimited
+    timeOfLastTurn: number; // epoch time
+    dictionary: DictionaryEnum;
+    wildMode: boolean; // are tiles permanently boosted?
+    points: LetterPoints;
+    enableEnchantments: boolean;
+    enableSpecialActions: boolean;
+    public: boolean;
+    handSize: number; // not sure if hand size of player or default hand size
+    seed: number;
+    randomSeed: boolean;
+    purchasedSpells: Array<Spell>; // one time spells only
+}
+
+export interface ServerSidePlayer {
+    id: string;
+    name: string;
+    hand: Array<Tile>;
+    points: number;
+    mana: number;
+    purchasedSpells: Array<Spell>; // one time spells only
+}
+
+export interface ClientSidePlayer {
+    id: string;
+    name: string;
+    points: number;
+    mana: number;
 }
 
 export interface Blocked {
@@ -28,16 +70,8 @@ export enum Enhancement {
     TRIPLE_WORD = "3W",
     NONE = "",
     START = "*",
+    DOUBLE_START = "2*",
     MANA = "M",
-}
-
-export interface Player {
-    id: string;
-    name: string;
-    hand: Array<Tile>;
-    handSize: number;
-    points: number;
-    mana: number;
 }
 
 interface Action {
@@ -76,10 +110,9 @@ interface SacrificeAction extends Action {
     points: -20; // you lose 20 points
 }
 
-export type Dictionary = {
-    [word: string]: true;
-};
+export type Dictionary = string[];
 
-export type LetterPoints = {
-    [character: string]: number;
-};
+export enum DictionaryEnum {
+    twl06 = "twl06",
+    sowpods = "sowpods",
+}

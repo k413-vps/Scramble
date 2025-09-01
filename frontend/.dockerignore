@@ -1,6 +1,9 @@
 scramble/.next
 scramble/node_modules
-scramble/.env.local
 
+# https://github.com/tailwindlabs/tailwindcss/issues/15806 
+scramble/package-lock.json 
+
+scramble/.env.local
 .dockerignore
 Dockerfile
