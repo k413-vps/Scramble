@@ -9,7 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { api } from "../../../lib/axios";
+import { api } from "@/lib/axios";
 import { MathRequest, MathResponse } from "shared/types/API";
 import { Dispatch, SetStateAction } from "react";
 
@@ -33,14 +33,11 @@ export function MathForm({ setMathResult }: MathFormProps) {
     async function postMath(data: MathRequest): Promise<MathResponse> {
         const res: MathResponse = (await api.post("/math", data)).data;
 
-        return res
+        return res;
     }
 
-
     async function onMathSuccess(mathResponse: MathResponse) {
-        
-        setMathResult(mathResponse.num)
-
+        setMathResult(mathResponse.num);
     }
 
     const mutation = useMutation({

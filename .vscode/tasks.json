@@ -16,7 +16,7 @@
                     }
                 ],
                 "background": {
-                    "beginsPattern": ".", 
+                    "beginsPattern": ".",
                     "endsPattern": "Ready to accept connections" //redis
                 }
             },
@@ -68,7 +68,7 @@
             "command": "docker buildx build --build-context frontend=. --build-context shared=../shared -f Dockerfile . -t frontend",
             "problemMatcher": [],
             "presentation": {
-                "panel": "new",
+                "clear": true,
                 "group": "build"
             },
             "options": {
@@ -81,7 +81,7 @@
             "command": "docker buildx build --build-context backend=. --build-context shared=../shared -f Dockerfile . -t backend",
             "problemMatcher": [],
             "presentation": {
-                "panel": "new",
+                "clear": true,
                 "group": "build"
             },
             "options": {
