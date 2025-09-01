@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button";
 
 import { PingResponse, RandomNumResponse, RedisConnectedResponse } from "shared/types/API";
+import { generateSeed } from "shared/functions/util";
+
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "../../../lib/axios";
@@ -12,7 +14,7 @@ import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import ChatInput from "@/components/test/[id]/ChatInput";
 import ChatMsgs from "@/components/test/[id]/ChatMsgs";
-import Auth from "@/components/test/[id]/AuthTest";
+import AuthTest from "@/components/test/[id]/AuthTest";
 
 import authClient from "@/lib/auth_client";
 import Link from "next/link";
@@ -43,6 +45,8 @@ const page = "test_chat";
 export default function Page() {
     const params = useParams();
     const roomId = params.id;
+
+    const [seed, setSeed] = useState(0);
 
     const {
         // data: ping,
@@ -158,12 +162,14 @@ export default function Page() {
         return <h1>Auth Ping worked!</h1>;
     };
 
+    useEffect(() => setSeed(generateSeed()), []);
+
     return (
         <div className="flex flex-col items-center gap-4 p-4">
             <Button>
                 <Link href="/">back</Link>
             </Button>
-            <Auth
+            <AuthTest
                 roomId={roomId}
                 name={session?.user.name}
                 profileUrl={session?.user.image}
@@ -183,6 +189,7 @@ export default function Page() {
                 <li>Post request without a body</li>
                 <li>Post request with a body submitted via form</li>
                 <li>web socket chat room, with broadcast by room id and user ids</li>
+                <li>Random seed</li>
             </ul>
             {renderPingStatus()}
             {renderAuthPingStatus()}
@@ -205,6 +212,7 @@ export default function Page() {
             ) : (
                 <h1>Cannot connect to socket {":("}</h1>
             )}
+            <h1>Random seed is: {seed}</h1>
         </div>
     );
 }

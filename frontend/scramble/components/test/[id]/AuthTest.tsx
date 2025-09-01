@@ -5,6 +5,7 @@ import authClient from "@/lib/auth_client";
 import Image from "next/image";
 import { ParamValue } from "next/dist/server/request/params";
 import { BetterFetchError } from "better-auth/react";
+import { useEffect, useState } from "react";
 
 type AuthProps = {
     roomId: ParamValue;
@@ -14,7 +15,7 @@ type AuthProps = {
     isPending: boolean;
 };
 
-export default function Auth({ roomId, name, profileUrl, isPending }: AuthProps) {
+export default function AuthTest({ roomId, name, profileUrl, isPending }: AuthProps) {
     async function handleSignIn() {
         await authClient.signIn.social({
             provider: "google",
@@ -26,8 +27,15 @@ export default function Auth({ roomId, name, profileUrl, isPending }: AuthProps)
         await authClient.signOut();
     }
 
+    // needed for some hydration issue
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     function renderInfo() {
-        if (isPending) {
+        if (isPending || !mounted) {
             return <h1>Loading Profile info</h1>;
         }
 

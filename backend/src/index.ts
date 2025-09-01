@@ -28,6 +28,9 @@ import { TestMessageToServer, TestMessageToClient } from "shared/types/SocketMes
 
 import { createClient, RedisClientType } from "redis";
 
+import { generateSeed } from "shared/functions/util";
+
+console.log("seed", generateSeed());
 async function main() {
     const env = process.argv[2] || "dev";
     const envFile = `.env.${env}`;
@@ -65,7 +68,6 @@ async function main() {
         const session = await auth.api.getSession({
             headers: fromNodeHeaders(req.headers),
         });
-
 
         if (session == null) {
             const err: ErrorResponse = {
