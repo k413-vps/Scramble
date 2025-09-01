@@ -15,7 +15,10 @@ export async function middleware(request: NextRequest) {
         return handleInvalidLogin(request);
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}${process.env.NEXT_PUBLIC_BACKEND_AUTH_PATH}/ping`;
+    const url = process.env.NEXT_PUBLIC_MIDDLEWARE_AUTH!;
+
+    console.log("inthe middleware");
+    console.log("Fetching auth status from ", url);
 
     const res = await fetch(url, {
         method: "GET",
@@ -25,6 +28,9 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!res.ok) {
+        console.log("Auth check failed", res.status, res.statusText);
+        console.log("text", await res.text());
+        console.log("json", await res.json());
         return handleInvalidLogin(request);
     }
 
