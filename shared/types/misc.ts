@@ -1,59 +1,36 @@
-export interface LetterCount {
-    a: number;
-    b: number;
-    c: number;
-    d: number;
-    e: number;
-    f: number;
-    g: number;
-    h: number;
-    i: number;
-    j: number;
-    k: number;
-    l: number;
-    m: number;
-    n: number;
-    o: number;
-    p: number;
-    q: number;
-    r: number;
-    s: number;
-    t: number;
-    u: number;
-    v: number;
-    w: number;
-    x: number;
-    y: number;
-    z: number;
-    _: number;
-}
+export type LetterCount = {
+    [key in Letter]: number;
+};
 
-export interface LetterPoints {
-    a: number;
-    b: number;
-    c: number;
-    d: number;
-    e: number;
-    f: number;
-    g: number;
-    h: number;
-    i: number;
-    j: number;
-    k: number;
-    l: number;
-    m: number;
-    n: number;
-    o: number;
-    p: number;
-    q: number;
-    r: number;
-    s: number;
-    t: number;
-    u: number;
-    v: number;
-    w: number;
-    x: number;
-    y: number;
-    z: number;
-    _: number;
-}
+export type LetterPoints = {
+    [key in Letter]: number;
+};
+
+export type Letter =
+    | "A"
+    | "B"
+    | "C"
+    | "D"
+    | "E"
+    | "F"
+    | "G"
+    | "H"
+    | "I"
+    | "J"
+    | "K"
+    | "L"
+    | "M"
+    | "N"
+    | "O"
+    | "P"
+    | "Q"
+    | "R"
+    | "S"
+    | "T"
+    | "U"
+    | "V"
+    | "W"
+    | "X"
+    | "Y"
+    | "Z"
+    | "_";

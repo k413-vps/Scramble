@@ -11,7 +11,7 @@ import LoadingPage from "@/components/LoadingPage";
 import { useEffect } from "react";
 
 import GameNotFoundPage from "./GameNotFoundPage";
-import GamePage from "./GamePage";
+import DebugPage from "./DebugPage";
 import LobbyPage from "./LobbyPage";
 
 import { useGameStore } from "@/utils/game/[id]/store";
@@ -19,6 +19,7 @@ import { useGameStore } from "@/utils/game/[id]/store";
 import { io, Socket } from "socket.io-client";
 import authClient from "@/lib/auth_client";
 import { JoinToClient, JoinToServer, StartToClient } from "shared/types/SocketMessages";
+import GamePage from "./GamePage";
 
 let socket: Socket;
 
