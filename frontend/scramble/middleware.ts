@@ -11,6 +11,8 @@ function handleInvalidLogin(request: NextRequest) {
 export async function middleware(request: NextRequest) {
     const allCookies = request.headers.get("cookie");
 
+    console.log("Middleware checking auth for", request.url);
+
     if (allCookies == null) {
         return handleInvalidLogin(request);
     }
@@ -34,5 +36,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/create"],
+    matcher: ["/create", "/game/:id"],
 };

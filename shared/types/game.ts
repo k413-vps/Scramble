@@ -20,6 +20,8 @@ export interface ServerSideGame {
     handSize: number;
     seed: number;
     randomSeed: boolean;
+    gameStarted: boolean;
+    ownerId: string;
 }
 
 export interface ClientSideGame {
@@ -41,10 +43,14 @@ export interface ClientSideGame {
     seed: number;
     randomSeed: boolean;
     purchasedSpells: Array<Spell>; // one time spells only
+    tilesRemaining: number;
+    gameStarted: boolean;
+    ownerId: string;
 }
 
 export interface ServerSidePlayer {
     id: string;
+    profilePicture: string;
     name: string;
     hand: Array<Tile>;
     points: number;
@@ -54,6 +60,7 @@ export interface ServerSidePlayer {
 
 export interface ClientSidePlayer {
     id: string;
+    profilePicture: string;
     name: string;
     points: number;
     mana: number;

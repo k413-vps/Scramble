@@ -1,4 +1,4 @@
-import { DictionaryEnum, Enhancement } from "./game";
+import { DictionaryEnum, Enhancement, ClientSideGame } from "./game";
 import { LetterCount, LetterPoints } from "./misc";
 import { TestMessageToClient } from "./SocketMessages";
 
@@ -51,4 +51,11 @@ export interface CreateGameRequest {
 
 export interface CreateGameResponse {
     roomId: string;
+}
+
+export interface GetGameRequest {
+    roomId: string;
+}
+export interface GetGameResponse {
+    game: ClientSideGame | null;
 }

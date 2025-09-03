@@ -59,7 +59,7 @@ export function CreateGameForm() {
 
     async function onCreateSuccess(createResponse: CreateGameResponse) {
         const roomId = createResponse.roomId;
-        router.replace(`games/${roomId}`);
+        router.replace(`game/${roomId}`);
     }
 
     return (

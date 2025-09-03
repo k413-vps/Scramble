@@ -1,11 +1,15 @@
 import { createClient, RedisClientType } from "redis";
-import { ServerSideGame } from "shared/types/game";
+import seedrandom from "seedrandom";
+import { shuffle } from "shared/functions/util";
+import { ServerSidePlayer, ServerSideGame } from "shared/types/game";
+import { drawTiles } from "./GameLogic";
+import { Tile } from "shared/types/tiles";
 
 export function RedisSetup(redisUrl: string): [RedisClientType, boolean] {
     const redisClient: RedisClientType = createClient({
         url: redisUrl,
     });
-    let success = false
+    let success = false;
 
     try {
         redisClient.connect();
@@ -57,7 +61,7 @@ export async function uniqueRoomId(redisClient: RedisClientType): Promise<string
 export async function createRoom(redisClient: RedisClientType, game: ServerSideGame): Promise<string> {
     const roomId = await uniqueRoomId(redisClient);
     const plainJSON = JSON.parse(JSON.stringify(game));
-    const key = `games:${roomId}`
+    const key = `games:${roomId}`;
     const ttlInSeconds = 86400;
 
     // console.log("stringy create room", plainJSON);
@@ -73,7 +77,89 @@ export async function getRoom(id: string, redisClient: RedisClientType): Promise
         return null;
     }
 
-    const jsonString: string = (await redisClient.json.get(`games:${id}`)) as string;
-    const game: ServerSideGame = JSON.parse(jsonString);
+    const game: ServerSideGame = (await redisClient.json.get(`games:${id}`)) as unknown as ServerSideGame;
+
     return game;
+}
+
+export async function getPlayers(redisClient: RedisClientType, roomId: string): Promise<ServerSidePlayer[]> {
+    const key = `games:${roomId}`;
+    const path = ".players";
+
+    const players = (await redisClient.json.get(key, { path })) as unknown as ServerSidePlayer[];
+    return players;
+}
+
+export async function checkPlayerExists(
+    redisClient: RedisClientType,
+    userId: string,
+    roomId: string
+): Promise<boolean> {
+    const players = await getPlayers(redisClient, roomId);
+
+    return players.some((player) => player.id === userId);
+}
+
+export async function addPlayer(
+    redisClient: RedisClientType,
+    player: ServerSidePlayer,
+    roomId: string
+): Promise<number> {
+    const key = `games:${roomId}`;
+
+    const path = ".players";
+
+    const size = await redisClient.json.arrAppend(key, path, player as any);
+
+    return size as number;
+}
+
+export async function setOwner(redisClient: RedisClientType, userId: string, roomId: string): Promise<void> {
+    const key = `games:${roomId}`;
+
+    await redisClient.json.set(key, ".ownerId", userId);
+}
+
+export async function drawTilesRedis(redisClient: RedisClientType, roomId: string, playerId: string): Promise<Tile[]> {
+    return [];
+}
+
+export async function startGame(redisClient: RedisClientType, roomId: string): Promise<[ServerSidePlayer[], number]> {
+    const key = `games:${roomId}`;
+
+    const result = (await redisClient.sendCommand([
+        "JSON.GET",
+        key,
+        ".players",
+        ".bag",
+        ".handSize",
+        ".seed",
+    ])) as unknown as string;
+
+    const json = JSON.parse(result);
+
+    const players = json[".players"] as ServerSidePlayer[];
+    const bag = json[".bag"] as string[];
+    const handSize = json[".handSize"] as number;
+    const seed = json[".seed"] as number;
+
+    const rng = seedrandom(seed.toString());
+
+    const shufflePlayers = shuffle(players, rng);
+
+    for (const player of shufflePlayers) {
+        const tiles = await drawTiles(bag, player.hand, handSize, player.purchasedSpells, seed);
+        player.hand.push(...tiles);
+    }
+
+    const currentPlayerId = shufflePlayers[0].id;
+
+    const gameStarted = true;
+
+    await redisClient.json.set(key, ".gameStarted", gameStarted);
+    await redisClient.json.set(key, ".currentPlayerId", currentPlayerId);
+    await redisClient.json.set(key, ".players", JSON.parse(JSON.stringify(shufflePlayers)));
+    await redisClient.json.set(key, ".bag", JSON.parse(JSON.stringify(bag)));
+
+    return [shufflePlayers, bag.length];
 }

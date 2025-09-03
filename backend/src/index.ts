@@ -24,15 +24,23 @@ import {
     ErrorResponse,
     CreateGameRequest,
     CreateGameResponse,
+    GetGameRequest,
+    GetGameResponse,
 } from "shared/types/API";
 
-import { TestMessageToServer, TestMessageToClient } from "shared/types/SocketMessages";
+import {
+    TestMessageToServer,
+    TestMessageToClient,
+    JoinToClient,
+    JoinToServer,
+    StartToClient,
+    StartToServer,
+} from "shared/types/SocketMessages";
 
-import { createClient, RedisClientType } from "redis";
-
-import { generateSeed } from "shared/functions/util";
-import { createRoom, RedisSetup } from "./util/RedisHelper";
+import { createRoom, getRoom, RedisSetup, checkPlayerExists, addPlayer, setOwner, startGame } from "./util/RedisHelper";
 import { parseCreateGameRequest } from "./util/APIParse";
+import { ServerSideGame, ServerSidePlayer, ClientSidePlayer } from "shared/types/game";
+import { convertGame, convertPlayer } from "./util/ServerClientTranslation";
 
 async function main() {
     const env = process.argv[2] || "dev";
@@ -87,7 +95,6 @@ async function main() {
 
     let [redisClient, redisConnected] = RedisSetup(redisUrl);
 
-
     // await migrate(db, { migrationsFolder: "drizzle" });
 
     app.get(`${PROTECTED_PATH}/ping`, async (req, res) => {
@@ -105,6 +112,31 @@ async function main() {
 
         const result: CreateGameResponse = {
             roomId,
+        };
+
+        res.send(result);
+    });
+
+    app.get(`${PROTECTED_PATH}/game/:roomId`, async (req: Request<GetGameRequest>, res) => {
+        const roomId = req.params.roomId;
+
+        const serverGame: ServerSideGame | null = await getRoom(roomId, redisClient);
+
+        if (!serverGame) {
+            const err: ErrorResponse = {
+                errMsg: "Room not found",
+            };
+
+            res.status(404).send(err);
+            return;
+        }
+        const session = await auth.api.getSession({
+            headers: fromNodeHeaders(req.headers),
+        });
+        const clientGame = convertGame(serverGame, session!.user.id);
+
+        const result: GetGameResponse = {
+            game: clientGame,
         };
 
         res.send(result);
@@ -189,9 +221,10 @@ async function main() {
             redisClient.json.set("test_chat", `$.${roomId}`, [], {
                 NX: true,
             });
-        }
+        } // a shame that i did it this way
 
-        socket.join(roomId);
+        const uniqueId = `${roomId}:${page}`;
+        socket.join(uniqueId);
 
         console.log(`User ${userId} connected to ${roomId} in page ${page}`);
 
@@ -205,7 +238,56 @@ async function main() {
 
             redisClient.json.arrAppend("test_chat", `$.${roomId}`, res as any);
 
-            io.to(roomId).emit("test_chat_msg_to_client", res);
+            io.to(uniqueId).emit("test_chat_msg_to_client", res);
+        });
+
+        socket.on("join_game", async (msg: JoinToServer) => {
+            const playerExists = await checkPlayerExists(redisClient, userId, roomId);
+            if (playerExists) {
+                return;
+            }
+
+            const serverPlayer: ServerSidePlayer = {
+                id: userId,
+                profilePicture: msg.profilePicture,
+                name: msg.name,
+                hand: [],
+                points: 0,
+                mana: 0,
+                purchasedSpells: [],
+            };
+
+            const size = await addPlayer(redisClient, serverPlayer, roomId);
+
+            const clientPlayer: ClientSidePlayer = convertPlayer(serverPlayer);
+
+            if (size === 1) {
+                await setOwner(redisClient, userId, roomId);
+            }
+
+            const res: JoinToClient = {
+                player: clientPlayer,
+                owner: size === 1,
+            };
+            io.to(uniqueId).emit("join_game", res);
+        });
+
+        socket.on("start_game", async (msg: StartToServer) => {
+            const [shuffledPlayers, tilesRemaining] = await startGame(redisClient, roomId);
+
+            const socketsInRoom = await io.in(uniqueId).fetchSockets();
+
+            for (const socketInstance of socketsInRoom) {
+                const socketInstanceUserId = socketInstance.handshake.query.userId as string;
+
+                const playerHand = shuffledPlayers.find((player) => player.id === socketInstanceUserId)?.hand || [];
+                const res: StartToClient = {
+                    players: shuffledPlayers.map(convertPlayer),
+                    hand: playerHand,
+                    tilesRemaining,
+                };
+                socketInstance.emit("start_game", res);
+            }
         });
 
         socket.on("disconnect", () => {
