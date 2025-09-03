@@ -46,6 +46,8 @@ export function parseCreateGameRequest(data: CreateGameRequest): ServerSideGame 
         handSize: data.handSize,
         seed: seed,
         randomSeed: data.seed == "",
+        gameStarted: false,
+        ownerId: "",
     };
 
     return ans;

@@ -1,61 +1,73 @@
 export interface Spell {
     cost: number;
     turn: boolean; // does it need to be your turn when you cast this spell?
+    type: string;
 }
 
 export interface PaintBrush extends Spell {
     cost: 12;
     turn: false;
+    type: "PaintBrush";
 }
 
 export interface Block extends Spell {
     cost: 10;
     turn: false;
+    type: "Block";
 }
 
 export interface Curse extends Spell {
     cost: 7;
     turn: false;
+    type: "Curse";
 }
 
 export interface Grabber extends Spell {
     cost: 5;
     turn: false;
+    type: "Grabber";
 }
 
 export interface Pictograph extends Spell {
     cost: 3;
     turn: false;
+    type: "Pictograph";
 }
 
 export interface Petroglyph extends Spell {
     cost: 5;
     turn: false;
+    type: "Petroglyph";
 }
 
 export interface Hieroglyph extends Spell {
     cost: 7;
     turn: false;
+    type: "Hieroglyph";
 }
 
 export interface Hone extends Spell {
     cost: 15;
     turn: false;
+    type: "Hone";
 }
 
 export interface Manifest extends Spell {
     cost: 10;
     turn: true;
+    type: "Manifest";
 }
 
 export interface CrystalBall extends Spell {
     cost: 8;
     turn: true;
+    type: "CrystalBall";
 }
 
 export interface Swap extends Spell {
     cost: 5;
     turn: true;
+    type: "Swap";
 }
 
 /**
@@ -77,9 +89,9 @@ export interface Swap extends Spell {
  *
  * hone: increases the chance of a tile being enchanted when drawn
  *
- * manifest: choose a non enchanted empty square. 10% chance its 3W, 20% 3L, 30% 2W, 40% 2L
+ * manifest: choose a non enhanced empty square. 10% chance its 3W, 20% 3L, 30% 2W, 40% 2L
  *
  * crystall ball: play twice. second play is worth half points.
- * 
+ *
  * swap: swap one of the tiles in your hand with a tile on the board if its a valid word. gain .5 points for the word.
  */
