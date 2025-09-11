@@ -23,16 +23,18 @@ function getEnchantmentClass(enchantment: Enchantment) {
 }
 
 export default function TileView({ tile, size = 48 }: TileViewProps) {
-    const edition =
+    const tooltip =
         tile.enchantment === Enchantment.FOIL
-            ? "Foil Edition"
+            ? "Foil " + tile.letter
             : tile.enchantment === Enchantment.HOLOGRAPHIC
-            ? "Holographic Edition"
+            ? "Holographic " + tile.letter
             : tile.enchantment === Enchantment.POLYCHROME
-            ? "Polychrome Edition"
+            ? "Polychrome " + tile.letter
             : tile.enchantment === Enchantment.NEGATIVE
-            ? "Negative Edition"
-            : "Standard Edition";
+            ? "Negative " + tile.letter
+            : "Standard " + tile.letter;
+
+    const animationDelay = `${Math.random() * -12}s`;
 
     return (
         <div
@@ -42,9 +44,10 @@ export default function TileView({ tile, size = 48 }: TileViewProps) {
                 height: size,
                 userSelect: "none", // Prevent text selection
                 borderRadius: size * 0.18,
+                animationDelay
             }}
             className={`${getEnchantmentClass(tile.enchantment)}`}
-            title={edition} // Tooltip on hover
+            title={tooltip} // Tooltip on hover
         >
             <h2
                 style={{
