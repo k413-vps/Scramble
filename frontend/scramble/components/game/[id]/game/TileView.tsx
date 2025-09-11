@@ -1,42 +1,74 @@
 import { Tile, Enchantment } from "shared/types/tiles";
+import { Card } from "@/components/ui/card";
 
 interface TileViewProps {
     tile: Tile;
     size?: number;
 }
 
+// ...existing code...
+function getEnchantmentClass(enchantment: Enchantment) {
+    switch (enchantment) {
+        case Enchantment.FOIL:
+            return "tile-foil";
+        case Enchantment.HOLOGRAPHIC:
+            return "tile-holo";
+        case Enchantment.POLYCHROME:
+            return "tile-poly";
+        case Enchantment.NEGATIVE:
+            return "tile-negative";
+        default:
+            return "tile-default";
+    }
+}
+
 export default function TileView({ tile, size = 48 }: TileViewProps) {
+    const edition =
+        tile.enchantment === Enchantment.FOIL
+            ? "Foil Edition"
+            : tile.enchantment === Enchantment.HOLOGRAPHIC
+            ? "Holographic Edition"
+            : tile.enchantment === Enchantment.POLYCHROME
+            ? "Polychrome Edition"
+            : tile.enchantment === Enchantment.NEGATIVE
+            ? "Negative Edition"
+            : "Standard Edition";
+
     return (
         <div
-            className="relative m-1 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow"
             style={{
+                position: "relative",
                 width: size,
                 height: size,
-                fontSize: size * 0.6,
-                userSelect: "none",
+                userSelect: "none", // Prevent text selection
+                borderRadius: size * 0.18,
             }}
+            className={`${getEnchantmentClass(tile.enchantment)}`}
+            title={edition} // Tooltip on hover
         >
-            {/* Letter */}
-            <span
-                className="absolute inset-0 flex items-center justify-center font-bold text-gray-900 dark:text-gray-100"
+            <h2
                 style={{
-                    top: -size * 0.08, // Move letter higher
-                }}
-            >
-                {tile.letter}
-            </span>
-            {/* Points */}
-            <span
-                className="absolute right-2 dark:text-gray-300"
-                style={{
-                    top: size * 0.01, // Move points higher
-                    right: size * 0.08,
-                    fontSize: size * 0.25,
-                    color: "var(--tw-text-gray-700)", // Tailwind color for light mode
+                    position: "absolute",
+                    top: 2,
+                    right: 5,
+                    margin: 0,
+                    fontSize: size * 0.3,
                 }}
             >
                 {tile.points}
-            </span>
+            </h2>
+
+            <h1
+                style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    fontSize: size * 0.6,
+                }}
+            >
+                {tile.letter}
+            </h1>
         </div>
     );
 }
