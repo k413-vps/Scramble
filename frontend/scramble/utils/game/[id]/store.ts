@@ -9,6 +9,7 @@ export const useGameStore = create<
         addPlayer: (player: ClientSidePlayer) => void;
         setOwner: (playerId: string) => void;
         startGame: (players: ClientSidePlayer[], hand: Tile[], tilesRemaining: number) => void;
+        swapHandTiles: (index1: number, index2: number) => void;
         numRows: number;
         numCols: number;
     }
@@ -63,6 +64,15 @@ export const useGameStore = create<
         set(() => ({
             ownerId: playerId,
         }));
+    },
+    swapHandTiles: (index1: number, index2: number) => {
+        set((state) => {
+            const newHand = [...state.hand];
+            const temp = newHand[index1];
+            newHand[index1] = newHand[index2];
+            newHand[index2] = temp;
+            return { hand: newHand };
+        });
     },
 
     numRows: 15,

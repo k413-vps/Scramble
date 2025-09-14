@@ -1,7 +1,7 @@
 import React from "react";
 // import { Tile } from "shared/types/tiles";
-import TileView from "./TileView";
 import { useGameStore } from "@/utils/game/[id]/store";
+import TileRackDrop from "./TileRackDrop";
 
 export default function TileRack() {
     const tileSize = 64; // Math.max(minSize, Math.min(maxSize, Math.floor(rackWidth / Math.max(tiles.length, 1)) - 8));
@@ -10,6 +10,7 @@ export default function TileRack() {
 
     const rackWidth = tileSize * (tiles.length + 1);
 
+    console.log("re render whole rack");
     return (
         <div
             className="flex flex-row items-center justify-center gap-2
@@ -17,8 +18,8 @@ export default function TileRack() {
                 bg-white/30 border border-white/40"
             style={{ width: rackWidth, height: tileSize * 1.8 }}
         >
-            {tiles.map((tile, idx) => (
-                <TileView key={idx} tile={tile} size={tileSize} />
+            {tiles.map((tile, index) => (
+                <TileRackDrop key={`tileTrayKey${index}`} tile={tile} size={tileSize} index={index} />
             ))}
         </div>
     );

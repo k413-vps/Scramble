@@ -1,8 +1,10 @@
+import { useDraggable } from "@dnd-kit/core";
 import { Tile, Enchantment } from "shared/types/tiles";
 
 interface TileViewProps {
     tile: Tile;
     size?: number;
+    index?: number;
 }
 
 // ...existing code...
@@ -20,8 +22,9 @@ function getEnchantmentClass(enchantment: Enchantment) {
             return "tile-default";
     }
 }
+const animationDelay = `${Math.random() * -12}s`;
 
-export default function TileView({ tile, size = 48 }: TileViewProps) {
+export default function TileView({ tile, size = 48, index = -1 }: TileViewProps) {
     const tooltip =
         tile.enchantment === Enchantment.FOIL
             ? "Foil " + tile.letter
@@ -33,7 +36,15 @@ export default function TileView({ tile, size = 48 }: TileViewProps) {
             ? "Negative " + tile.letter
             : "Standard " + tile.letter;
 
-    const animationDelay = `${Math.random() * -12}s`;
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+        id: "rackDrag" + index,
+    });
+    const style = transform
+        ? {
+              transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+              zIndex: 1000,
+          }
+        : undefined;
 
     return (
         <div
@@ -45,11 +56,13 @@ export default function TileView({ tile, size = 48 }: TileViewProps) {
                 borderRadius: size * 0.18,
                 animationDelay,
                 border: `${size * 0.04}px solid var(--foreground)`,
-
-                
+                ...style,
             }}
             className={`${getEnchantmentClass(tile.enchantment)}`}
             title={tooltip} // Tooltip on hover
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
         >
             <h2
                 style={{
