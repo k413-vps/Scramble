@@ -11,7 +11,7 @@ import LoadingPage from "@/components/LoadingPage";
 import { useEffect } from "react";
 
 import GameNotFoundPage from "./GameNotFoundPage";
-import DebugPage from "./DebugPage";
+// import DebugPage from "./DebugPage";
 import LobbyPage from "./LobbyPage";
 
 import { useGameStore } from "@/utils/game/[id]/store";

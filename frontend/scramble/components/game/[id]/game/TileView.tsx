@@ -1,5 +1,4 @@
 import { Tile, Enchantment } from "shared/types/tiles";
-import { Card } from "@/components/ui/card";
 
 interface TileViewProps {
     tile: Tile;
@@ -44,7 +43,10 @@ export default function TileView({ tile, size = 48 }: TileViewProps) {
                 height: size,
                 userSelect: "none", // Prevent text selection
                 borderRadius: size * 0.18,
-                animationDelay
+                animationDelay,
+                border: `${size * 0.04}px solid var(--foreground)`,
+
+                
             }}
             className={`${getEnchantmentClass(tile.enchantment)}`}
             title={tooltip} // Tooltip on hover

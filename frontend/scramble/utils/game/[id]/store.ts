@@ -9,6 +9,8 @@ export const useGameStore = create<
         addPlayer: (player: ClientSidePlayer) => void;
         setOwner: (playerId: string) => void;
         startGame: (players: ClientSidePlayer[], hand: Tile[], tilesRemaining: number) => void;
+        numRows: number;
+        numCols: number;
     }
 >((set) => ({
     players: [],
@@ -46,6 +48,8 @@ export const useGameStore = create<
     init: (game: ClientSideGame) => {
         set(() => ({
             ...game,
+            numRows: game.board.length,
+            numCols: game.board[0].length,
         }));
     },
 
@@ -60,4 +64,7 @@ export const useGameStore = create<
             ownerId: playerId,
         }));
     },
+
+    numRows: 15,
+    numCols: 15,
 }));

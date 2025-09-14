@@ -1,4 +1,19 @@
-export default function Board() {
-    return <div>Board Component</div>;
+import { useGameStore } from "@/utils/game/[id]/store";
+import BoardTileView from "./BoardTileView";
 
+export default function Board() {
+    const board = useGameStore((state) => state.board);
+    const enhancements = useGameStore((state) => state.enhancements);
+
+    return (
+        <div style={{ display: "grid", gridTemplateRows: `repeat(${board.length}, 1fr)` }}>
+            {board.map((row, rowIdx) => (
+                <div key={rowIdx} style={{ display: "flex" }}>
+                    {row.map((cell, colIdx) => (
+                        <BoardTileView key={colIdx} cell={cell} enhancement={enhancements[rowIdx][colIdx]} />
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
 }
