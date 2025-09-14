@@ -20,6 +20,7 @@ import { io, Socket } from "socket.io-client";
 import authClient from "@/lib/auth_client";
 import { JoinToClient, JoinToServer, StartToClient } from "shared/types/SocketMessages";
 import GamePage from "./GamePage";
+import { DndContext } from "@dnd-kit/core";
 
 let socket: Socket;
 
@@ -115,7 +116,11 @@ export default function Page() {
     }
 
     if (gameStarted) {
-        return <GamePage />;
+        return (
+            <DndContext>
+                <GamePage />
+            </DndContext>
+        );
     }
 
     return <LobbyPage userId={session.user.id} socket={socket} />;

@@ -2,11 +2,14 @@ import { BoardTile, Enhancement } from "shared/types/game";
 import TileView from "./TileView";
 import { Tile } from "shared/types/tiles";
 import { memo } from "react";
-import { Sparkle, Star  } from "lucide-react";
+import { Sparkle, Star } from "lucide-react";
+import { useDroppable } from "@dnd-kit/core";
 
 type BoardTileProps = {
     cell: BoardTile | null;
     enhancement: Enhancement;
+    rowNum: number;
+    colNum: number;
 };
 
 function getEnhancementClass(enhancement: Enhancement) {
@@ -34,13 +37,15 @@ function getEnhancementClass(enhancement: Enhancement) {
 function getEnchancementLetter(enhancement: Enhancement, size: number) {
     if (enhancement === Enhancement.MANA) {
         return (
-            <div style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                fontSize: size * 0.6,
-            }}>
+            <div
+                style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    fontSize: size * 0.6,
+                }}
+            >
                 <Sparkle size={size * 0.6} className="text-purple-500" />
             </div>
         );
@@ -48,13 +53,15 @@ function getEnchancementLetter(enhancement: Enhancement, size: number) {
 
     if (enhancement === Enhancement.START) {
         return (
-            <div style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                fontSize: size * 0.6,
-            }}>
+            <div
+                style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    fontSize: size * 0.6,
+                }}
+            >
                 <Star size={size * 0.6} className="text-yellow-500" />
             </div>
         );
@@ -62,16 +69,17 @@ function getEnchancementLetter(enhancement: Enhancement, size: number) {
 
     if (enhancement === Enhancement.DOUBLE_START) {
         return (
-            <div style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                fontSize: size * 0.6,
-            }}>
-                <Star size={size * 0.6}  />
-
-                </div>
+            <div
+                style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    fontSize: size * 0.6,
+                }}
+            >
+                <Star size={size * 0.6} />
+            </div>
         );
     }
 
@@ -90,18 +98,27 @@ function getEnchancementLetter(enhancement: Enhancement, size: number) {
     );
 }
 
-const BoardCell = ({ cell, enhancement }: BoardTileProps) => {
+const BoardCell = ({ cell, enhancement, rowNum, colNum }: BoardTileProps) => {
     const size = 64;
+
+    const { isOver, setNodeRef } = useDroppable({
+        id: "boardDrop" + rowNum + "-" + colNum,
+    });
+
+    const style = {
+        color: isOver ? "green" : undefined,
+    };
 
     if (cell === null) {
         return (
             <div
+                ref={setNodeRef}
                 style={{
                     position: "relative",
                     width: size,
                     height: size,
                     userSelect: "none", // Prevent text selection
-                    // borderRadius: size * 0.18,
+                    ...style,
                 }}
                 className={`${getEnhancementClass(enhancement)}`}
             >

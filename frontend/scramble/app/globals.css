@@ -309,31 +309,24 @@
 @keyframes glitch-text {
     0% {
         text-shadow: 2px 0 red, -2px 0 blue;
-        transform: none;
     }
     10% {
         text-shadow: -2px 0 red, 2px 0 blue;
-        transform: skewX(-5deg);
     }
     20% {
         text-shadow: 2px 2px lime, -2px -2px magenta;
-        transform: skewX(5deg);
     }
     30% {
         text-shadow: -2px 2px cyan, 2px -2px yellow;
-        transform: none;
     }
     40% {
         text-shadow: 2px 0 red, -2px 0 blue;
-        transform: skewX(-5deg);
     }
     50% {
         text-shadow: none;
-        transform: none;
     }
     100% {
         text-shadow: 2px 0 red, -2px 0 blue;
-        transform: none;
     }
 }
 
