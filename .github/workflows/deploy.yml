@@ -32,3 +32,6 @@ jobs:
         -   name: deploy
             run: docker compose -p scramble_prod --env-file ../../backend/.env.prod  --env-file .env up -d
             working-directory: /home/github-runner/projects/Scramble/deployment/prod
+
+        -   name: cleanup docker imagers
+            run: docker system prune -af --volumes
