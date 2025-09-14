@@ -1,3 +1,4 @@
+import { DragDataTile, DragTypes } from "@/lib/dragTypes";
 import { useDraggable } from "@dnd-kit/core";
 import { Tile, Enchantment } from "shared/types/tiles";
 
@@ -25,6 +26,11 @@ function getEnchantmentClass(enchantment: Enchantment) {
 const animationDelay = `${Math.random() * -12}s`;
 
 export default function TileView({ tile, size = 48, index = -1 }: TileViewProps) {
+    const dragData: DragDataTile = {
+        dragType: DragTypes.TILE,
+        dragIndex: index,
+    };
+
     const tooltip =
         tile.enchantment === Enchantment.FOIL
             ? "Foil " + tile.letter
@@ -37,7 +43,8 @@ export default function TileView({ tile, size = 48, index = -1 }: TileViewProps)
             : "Standard " + tile.letter;
 
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
-        id: "rackDrag" + index,
+        id: "tile" + index,
+        data: dragData,
     });
     const style = transform
         ? {

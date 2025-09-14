@@ -4,6 +4,7 @@ import { Tile } from "shared/types/tiles";
 import { memo } from "react";
 import { Sparkle, Star } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
+import { DropDataBoard, DropTypes } from "@/lib/dragTypes";
 
 type BoardTileProps = {
     cell: BoardTile | null;
@@ -101,8 +102,14 @@ function getEnchancementLetter(enhancement: Enhancement, size: number) {
 const BoardCell = ({ cell, enhancement, rowNum, colNum }: BoardTileProps) => {
     const size = 64;
 
+    const dropData: DropDataBoard = {
+        dropType: DropTypes.BOARD,
+        rowNum,
+        colNum,
+    };
     const { isOver, setNodeRef } = useDroppable({
         id: "boardDrop" + rowNum + "-" + colNum,
+        data: dropData,
     });
 
     const style = {
