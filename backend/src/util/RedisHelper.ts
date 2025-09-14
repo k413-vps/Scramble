@@ -4,6 +4,7 @@ import { shuffle } from "shared/functions/util";
 import { ServerSidePlayer, ServerSideGame } from "shared/types/game";
 import { drawTiles } from "./GameLogic";
 import { Tile } from "shared/types/tiles";
+import { LetterPoints } from "shared/types/misc";
 
 export function RedisSetup(redisUrl: string): [RedisClientType, boolean] {
     const redisClient: RedisClientType = createClient({
@@ -134,6 +135,7 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
         ".bag",
         ".handSize",
         ".seed",
+        ".points",
     ])) as unknown as string;
 
     const json = JSON.parse(result);
@@ -142,13 +144,14 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
     const bag = json[".bag"] as string[];
     const handSize = json[".handSize"] as number;
     const seed = json[".seed"] as number;
+    const points = json[".points"] as LetterPoints;
 
     const rng = seedrandom(seed.toString());
 
     const shufflePlayers = shuffle(players, rng);
 
     for (const player of shufflePlayers) {
-        const tiles = await drawTiles(bag, player.hand, handSize, player.purchasedSpells, seed);
+        const tiles = await drawTiles(bag, player.hand, handSize, player.purchasedSpells, seed, points);
         player.hand.push(...tiles);
     }
 

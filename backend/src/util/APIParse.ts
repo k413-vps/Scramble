@@ -25,6 +25,7 @@ export function parseCreateGameRequest(data: CreateGameRequest): ServerSideGame 
         }
     }
 
+    console.log(data.letterFrequency);
     const bag = Object.entries(data.letterFrequency).flatMap(([letter, count]) => Array(count).fill(letter));
     const shuffledBag = shuffle(bag, rng);
 

@@ -2,6 +2,7 @@ import seedrandom from "seedrandom";
 import { Spell } from "shared/types/spells";
 import { Enchantment, EnchantmentRate, Tile } from "shared/types/tiles";
 import { DefaultEnchantmentRate, BoostedEnchantmentRate } from "shared/defaults/Enchantments";
+import { LetterPoints, Letter } from "shared/types/misc";
 
 function getRandomEnchantment(rng: seedrandom.PRNG, rates: EnchantmentRate): Enchantment {
     const roll = rng();
@@ -25,7 +26,8 @@ export async function drawTiles(
     hand: Tile[],
     handSize: number,
     purchasedSpells: Array<Spell>,
-    seed: number
+    seed: number,
+    points: LetterPoints
 ): Promise<Tile[]> {
     const containsPaintBrush = purchasedSpells.some((spell) => spell.type === "PaintBrush");
     const containsHone = purchasedSpells.some((spell) => spell.type === "Hone");
@@ -52,7 +54,7 @@ export async function drawTiles(
         const enchantment = getRandomEnchantment(rng, EnchantmentRates);
         const tile: Tile = {
             letter: letter!,
-            points: 0,
+            points: points[letter as Letter] || 0,
             position: null,
             enchantment,
         };

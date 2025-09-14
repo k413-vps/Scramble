@@ -4,7 +4,7 @@ import { Tile } from "./tiles";
 
 export interface ServerSideGame {
     players: ServerSidePlayer[]; // player turn goes in this order
-    board: Array<Array<Tile | null | Blocked>>;
+    board: Array<Array<BoardTile | null>>;
     enhancements: Enhancement[][];
     currentPlayerId: string;
     bag: string[];
@@ -26,7 +26,7 @@ export interface ServerSideGame {
 
 export interface ClientSideGame {
     players: ClientSidePlayer[]; // player turn goes in this order
-    board: Array<Array<Tile | null | Blocked>>;
+    board: Array<Array<BoardTile | null>>;
     enhancements: Enhancement[][];
     currentPlayerId: string;
     hand: Tile[];
@@ -47,6 +47,12 @@ export interface ClientSideGame {
     gameStarted: boolean;
     ownerId: string;
 }
+
+export interface BoardTile {
+    type: "tile" | "blocked";
+    tile: Tile | Blocked;
+}
+
 
 export interface ServerSidePlayer {
     id: string;
