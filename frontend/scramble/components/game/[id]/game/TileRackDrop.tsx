@@ -6,7 +6,7 @@ import { DropDataTray, DropTypes } from "@/lib/dragTypes";
 
 interface TileRackDropProps {
     index: number;
-    tile?: Tile;
+    tile: Tile | null;
     size: number;
 }
 
@@ -14,6 +14,7 @@ const TileRackDrop = ({ index, tile, size }: TileRackDropProps) => {
     const dropData: DropDataTray = {
         dropIndex: index,
         dropType: DropTypes.TRAY,
+        priority: 3
     };
 
     const { isOver, setNodeRef } = useDroppable({
@@ -33,6 +34,8 @@ const TileRackDrop = ({ index, tile, size }: TileRackDropProps) => {
         boxShadow: isOver ? "0 0 8px #4F8EF7" : undefined,
         transition: "border 0.2s, background 0.2s, box-shadow 0.2s",
         cursor: "pointer",
+        zIndex: 100,
+
     };
 
     return (
@@ -43,11 +46,12 @@ const TileRackDrop = ({ index, tile, size }: TileRackDropProps) => {
             ) : (
                 <div
                     style={{
-                        width: size*1.2,
-                        height: size*1.2,
+                        width: size * 1.2,
+                        height: size * 1.2,
+                        backgroundColor: "#f0f0f0",
                     }}
                 >
-                    Drop a tile here
+                    drop here
                 </div>
             )}
         </div>

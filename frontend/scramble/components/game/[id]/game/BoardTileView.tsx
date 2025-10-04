@@ -106,6 +106,7 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum }: BoardTileProps) => {
         dropType: DropTypes.BOARD,
         rowNum,
         colNum,
+        priority: -1,
     };
     const { isOver, setNodeRef } = useDroppable({
         id: "boardDrop" + rowNum + "-" + colNum,
@@ -113,34 +114,44 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum }: BoardTileProps) => {
     });
 
     const style = {
-        color: isOver ? "green" : undefined,
+        boxShadow: isOver
+            ? "inset 0 0 0 2px #4F8EF7" // Creates an inset border effect
+            : undefined,
+        borderRadius: isOver ? "8px" : "0", // Rounded edges when isOver is true
     };
 
-    if (cell === null) {
-        return (
-            <div
-                ref={setNodeRef}
-                style={{
-                    position: "relative",
-                    width: size,
-                    height: size,
-                    userSelect: "none", // Prevent text selection
-                    ...style,
-                }}
-                className={`${getEnhancementClass(enhancement)}`}
-            >
-                {getEnchancementLetter(enhancement, size)}
-            </div>
-        );
-    }
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                position: "relative",
+                width: size,
+                height: size,
+                userSelect: "none",
 
-    if (cell.type === "blocked") {
-        return <div>Blocked</div>;
-    }
+                ...style,
+            }}
+            className={`${getEnhancementClass(enhancement)}`}
+        >
+            {getEnchancementLetter(enhancement, size)}
+            {cell && cell.type === "tile" && (
+                <div
+                    style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                    }}
+                >
+                    <TileView tile={cell.tile as Tile} size={60} />
+                </div>
+            )}
+        </div>
+    );
 
-    if (cell.type === "tile") {
-        return <TileView tile={cell.tile as Tile} size={48} />;
-    }
+    //     if (cell.type === "blocked") {
+    //     return <div>Blocked</div>;
+    // }
 };
 
 export default memo(BoardCell, (prevProps, nextProps) => prevProps.cell === nextProps.cell);

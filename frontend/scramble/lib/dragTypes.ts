@@ -1,3 +1,5 @@
+import { Position, Tile } from "shared/types/tiles";
+
 export enum DropTypes {
     TRAY,
     BOARD,
@@ -9,6 +11,7 @@ export enum DragTypes {
 
 export interface DropData {
     dropType: DropTypes;
+    priority: number;
 }
 
 export interface DropDataTray extends DropData {
@@ -28,5 +31,6 @@ export interface DragData {
 
 export interface DragDataTile extends DragData {
     dragType: DragTypes.TILE;
-    dragIndex: number;
+    dragIndex: number | null; 
+    tile: Tile;
 }

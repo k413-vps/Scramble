@@ -3,17 +3,42 @@ import TileRack from "@/components/game/[id]/game/TileRack";
 // import ThemeToggle from "@/components/ThemeToggle";
 import Board from "@/components/game/[id]/game/Board";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import {
+    CollisionDetection,
+    DndContext,
+    DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
+    rectIntersection,
+} from "@dnd-kit/core";
 import { DragDataTile, DragTypes, DropDataBoard, DropDataTray, DropTypes } from "@/lib/dragTypes";
+import { useState } from "react";
+import TileView from "@/components/game/[id]/game/TileView";
+import { Tile } from "shared/types/tiles";
 
 export default function GamePage() {
     // const hand = useGameStore((state) => state.hand);
     const numRows = useGameStore((state) => state.numRows);
     const numCols = useGameStore((state) => state.numCols);
 
-    const swapHandTiles = useGameStore((state) => state.swapHandTiles);
+    const handToHand = useGameStore((state) => state.handToHand);
+    const handToBoard = useGameStore((state) => state.handToBoard);
+    const boardToBoard = useGameStore((state) => state.boardToBoard);
+    const boardToHand = useGameStore((state) => state.boardToHand);
+
+    const [isDragging, setIsDragging] = useState(false);
+    const [activeTile, setActiveTile] = useState<Tile | null>(null);
+
+    function handleDragStart(event: DragStartEvent) {
+        const dragData = event.active.data.current as DragDataTile;
+        setIsDragging(true);
+        setActiveTile(dragData.tile);
+    }
 
     function handleDragEnd(event: DragEndEvent) {
+        setIsDragging(false);
+        setActiveTile(null);
+
         const { over, active } = event;
 
         if (over && active) {
@@ -24,7 +49,7 @@ export default function GamePage() {
                 handleDragTileDropTray(over.data.current as DropDataTray, active.data.current as DragDataTile);
             }
 
-            if (dropType == DropTypes.BOARD) {
+            if (dropType == DropTypes.BOARD && dragType == DragTypes.TILE) {
                 handleDragTileDropBoard(over.data.current as DropDataBoard, active.data.current as DragDataTile);
             }
         }
@@ -32,15 +57,43 @@ export default function GamePage() {
 
     function handleDragTileDropTray(dropData: DropDataTray, dragData: DragDataTile) {
         console.log("Drag tile drop tray");
-        swapHandTiles(dropData.dropIndex, dragData.dragIndex);
+
+        if (dragData.dragIndex === null) {
+            boardToHand(dragData.tile.position!.row, dragData.tile.position!.col, dropData.dropIndex);
+            return;
+        }
+        handToHand(dropData.dropIndex, dragData.dragIndex!);
     }
 
     function handleDragTileDropBoard(dropData: DropDataBoard, dragData: DragDataTile) {
         console.log("Drag tile drop board");
+
+        if (dragData.dragIndex === null) {
+            boardToBoard(dragData.tile.position!.row, dragData.tile.position!.col, dropData.rowNum, dropData.colNum);
+            return;
+        }
+        handToBoard(dropData.rowNum, dropData.colNum, dragData.dragIndex);
     }
 
+    const prioritizeDroppable: CollisionDetection = (args) => {
+        const collisions = rectIntersection(args);
+
+        if (collisions.length > 1) {
+            // Sort by custom priority
+            collisions.sort((a, b) => {
+                const priorityA = a.data?.droppableContainer?.data?.current?.priority as number;
+                const priorityB = b.data?.droppableContainer?.data?.current?.priority as number;
+                console.log(b.data?.droppableContainer?.data?.current);
+                console.log(a.data?.droppableContainer?.data?.current);
+                return priorityB - priorityA;
+            });
+        }
+
+        return collisions;
+    };
+
     return (
-        <DndContext onDragEnd={handleDragEnd}>
+        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd} collisionDetection={prioritizeDroppable}>
             <div>
                 <div
                     style={{
@@ -52,7 +105,21 @@ export default function GamePage() {
                         position: "relative",
                     }}
                 >
+                    <DragOverlay dropAnimation={null}>
+                        {activeTile ? (
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    left: 12,
+                                    top: 12,
+                                }}
+                            >
+                                <TileView tile={activeTile} size={48} />
+                            </div>
+                        ) : null}
+                    </DragOverlay>
                     <TransformWrapper
+                        disabled={isDragging}
                         minScale={0.5}
                         maxScale={2}
                         wheel={{ step: 4.2 }}
@@ -79,7 +146,6 @@ export default function GamePage() {
                             width: "100%",
                             display: "flex",
                             justifyContent: "center",
-                            pointerEvents: "auto",
                         }}
                     >
                         <TileRack />

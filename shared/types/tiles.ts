@@ -2,6 +2,7 @@ export interface Tile {
     letter: string;
     points: number;
     position: null | Position; // null if it is in player's hand
+    
     placed: boolean; // true if placed on board and finalized
     // position != null &&  !placed means it is currently placed on board but not finalized
 
