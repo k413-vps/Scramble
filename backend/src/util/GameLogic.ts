@@ -56,7 +56,9 @@ export async function drawTiles(
             letter: letter!,
             points: points[letter as Letter] || 0,
             position: null,
+            placed: false,
             enchantment,
+            id: bag.length
         };
 
         if (enchantment === Enchantment.NEGATIVE) {

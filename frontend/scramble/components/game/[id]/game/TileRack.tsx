@@ -18,26 +18,36 @@ export default function TileRack() {
             className="flex flex-row items-center justify-center gap-2 rounded-xl shadow-lg backdrop-blur-md bg-white/30 border border-white/40"
             style={{ width: rackWidth, height: tileSize * 1.8 }}
         >
-            {tiles.map((tile, index) => (
-                <motion.div
-                    key={`tileTrayKey${index}`}
-                    layout // enables swap animation
-                    transition={{
-                        layout: {
-                            type: "spring",
-                            stiffness: 600,
-                            damping: 40,
-                        },
-                        scale: { type: "spring", stiffness: 500, damping: 30 },
-                        opacity: { duration: 0.2 },
-                    }}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                >
-                    <TileRackDrop key={`tileTrayKey${index}`} tile={tile} size={tileSize} index={index} />
-                </motion.div>
-            ))}
+            <AnimatePresence initial={true}>
+                {tiles.map((tile, index) => (
+                    <motion.div
+                        style={{ position: "relative" }}
+                        key={`tile-${tile.id}`}
+                        layoutId={`tile-${tile.id}`}
+                        layout // enables swap animation
+                        animate={{
+                            opacity: 1,
+                            scale: 1,
+                        }}
+                        transition={{
+                            layout: {
+                                duration: 1.0,
+                                ease: "easeInOut",
+                            },
+                            scale: {
+                                type: "tween",
+                                ease: "easeInOut",
+                                delay: index * 0.3,
+                                duration: 0.5,
+                            },
+                        }}
+                        initial={{ scale: 0, opacity: 0 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                    >
+                        <TileRackDrop key={`tileTrayKey${index}`} tile={tile} size={tileSize} index={index} />
+                    </motion.div>
+                ))}
+            </AnimatePresence>
         </div>
     );
 }

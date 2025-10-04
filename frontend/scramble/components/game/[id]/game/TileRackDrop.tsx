@@ -22,8 +22,8 @@ const TileRackDrop = ({ index, tile, size }: TileRackDropProps) => {
     });
 
     const style = {
-        width: size * 1.1,
-        height: size * 1.1,
+        width: size * 1.2,
+        height: size * 1.2,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -43,8 +43,8 @@ const TileRackDrop = ({ index, tile, size }: TileRackDropProps) => {
             ) : (
                 <div
                     style={{
-                        width: size,
-                        height: size,
+                        width: size*1.2,
+                        height: size*1.2,
                     }}
                 >
                     Drop a tile here

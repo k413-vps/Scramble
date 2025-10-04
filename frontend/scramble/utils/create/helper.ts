@@ -17,7 +17,6 @@ export function formToRequest(form: CreateGameFormValues): CreateGameRequest {
     const enhancements = getEnhancements(form.board);
     const frequencies = getFrequencies(form.length);
 
-    console.log(frequencies);
 
     const ans: CreateGameRequest = {
         enhancements: enhancements,
