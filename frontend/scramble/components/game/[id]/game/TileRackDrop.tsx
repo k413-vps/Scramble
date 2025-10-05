@@ -14,7 +14,7 @@ const TileRackDrop = ({ index, tile, size }: TileRackDropProps) => {
     const dropData: DropDataTray = {
         dropIndex: index,
         dropType: DropTypes.TRAY,
-        priority: 3
+        priority: 3,
     };
 
     const { isOver, setNodeRef } = useDroppable({
@@ -35,7 +35,6 @@ const TileRackDrop = ({ index, tile, size }: TileRackDropProps) => {
         transition: "border 0.2s, background 0.2s, box-shadow 0.2s",
         cursor: "pointer",
         zIndex: 100,
-
     };
 
     return (
@@ -48,11 +47,8 @@ const TileRackDrop = ({ index, tile, size }: TileRackDropProps) => {
                     style={{
                         width: size * 1.2,
                         height: size * 1.2,
-                        backgroundColor: "#f0f0f0",
                     }}
-                >
-                    drop here
-                </div>
+                ></div>
             )}
         </div>
     );
