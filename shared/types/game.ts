@@ -1,6 +1,6 @@
 import { LetterCount, LetterPoints } from "./misc";
 import { Spell } from "./spells";
-import { Tile } from "./tiles";
+import { Position, Tile } from "./tiles";
 
 export interface ServerSideGame {
     players: ServerSidePlayer[]; // player turn goes in this order
@@ -74,6 +74,8 @@ export interface ClientSidePlayer {
 
 export interface Blocked {
     playerId: string;
+    position: Position;
+    playerImage: string; // profile picture of the player who placed it
 }
 
 export enum Enhancement {

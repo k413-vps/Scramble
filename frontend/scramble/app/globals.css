@@ -132,12 +132,14 @@
 /* go crazy for tiles*/
 .tile-default {
     background: var(--color-card);
+    color: var(--color-foreground);
 }
 
 .tile-foil {
     box-shadow: 0 0 4px 2px blue;
     animation: foil-glow 1.2s infinite alternate;
     background: var(--color-card);
+    color: var(--color-foreground);
 }
 
 @keyframes foil-glow {
@@ -154,6 +156,7 @@
     background: linear-gradient(120deg, #ff3b3b 0%, var(--color-card) 100%);
     box-shadow: 0 2px 12px 0 rgba(255, 59, 59, 1), 0 0 0 2px #ff3b3b44;
     overflow: hidden;
+    color: var(--color-foreground);
 }
 
 .tile-holo::before {
@@ -174,6 +177,7 @@
     opacity: 0.7;
     pointer-events: none;
     animation: holo-shimmer 2.2s linear infinite;
+    color: var(--color-foreground);
 }
 
 @keyframes holo-shimmer {
@@ -215,6 +219,7 @@
     z-index: 0;
     overflow: hidden;
     filter: blur(0.5px) contrast(1.2);
+    color: var(--color-foreground);
 }
 
 .tile-poly::after {
@@ -279,8 +284,8 @@
 
 .tile-negative {
     position: relative;
-    color: #fff;
-    background: #111;
+    color: var(--color-foreground);
+    background: var(--color-background);
     overflow: hidden;
     animation: glitch-text 1s infinite linear;
 }
