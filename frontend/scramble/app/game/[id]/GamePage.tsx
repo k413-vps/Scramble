@@ -15,6 +15,7 @@ import { DragDataTile, DragTypes, DropDataBoard, DropDataTray, DropTypes } from 
 import { useState } from "react";
 import TileView from "@/components/game/[id]/game/TileView";
 import { Tile } from "shared/types/tiles";
+import Leaderboard from "@/components/game/[id]/game/Leaderboard";
 
 export default function GamePage() {
     // const hand = useGameStore((state) => state.hand);
@@ -149,6 +150,7 @@ export default function GamePage() {
                         <TileRack />
                     </div>
                 </div>
+                <Leaderboard />
             </div>
         </DndContext>
     );
