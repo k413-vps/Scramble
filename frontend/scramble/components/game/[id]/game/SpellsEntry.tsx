@@ -8,7 +8,7 @@ interface ActionsEntryProps {
     mana: number;
 }
 
-export default function ActionsEntry({ spell, index, mana }: ActionsEntryProps) {
+export default function ActionsEntry({ spell, mana }: ActionsEntryProps) {
     const [isTooltipVisible, setTooltipVisible] = useState(false);
     const isDisabled = mana < spell.cost;
 

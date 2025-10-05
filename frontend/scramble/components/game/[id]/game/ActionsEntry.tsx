@@ -8,7 +8,7 @@ interface ActionsEntryProps {
     mana: number;
 }
 
-export default function ActionsEntry({ action, index, mana }: ActionsEntryProps) {
+export default function ActionsEntry({ action, mana }: ActionsEntryProps) {
     const [isTooltipVisible, setTooltipVisible] = useState(false);
     const isDisabled = mana < action.cost;
 
