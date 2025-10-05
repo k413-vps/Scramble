@@ -1,4 +1,4 @@
-import { Position, Tile } from "shared/types/tiles";
+import { Tile } from "shared/types/tiles";
 
 export enum DropTypes {
     TRAY,

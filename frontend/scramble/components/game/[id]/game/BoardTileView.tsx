@@ -111,6 +111,7 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum }: BoardTileProps) => {
     const { isOver, setNodeRef } = useDroppable({
         id: "boardDrop" + rowNum + "-" + colNum,
         data: dropData,
+        disabled: cell !== null, // Disable if cell is occupied
     });
 
     const style = {

@@ -83,8 +83,6 @@ export default function GamePage() {
             collisions.sort((a, b) => {
                 const priorityA = a.data?.droppableContainer?.data?.current?.priority as number;
                 const priorityB = b.data?.droppableContainer?.data?.current?.priority as number;
-                console.log(b.data?.droppableContainer?.data?.current);
-                console.log(a.data?.droppableContainer?.data?.current);
                 return priorityB - priorityA;
             });
         }

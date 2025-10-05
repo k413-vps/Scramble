@@ -68,6 +68,8 @@ export const useGameStore = create<
             ownerId: playerId,
         }));
     },
+
+    // simple swap
     handToHand: (index1: number, index2: number) => {
         set((state) => {
             const newHand = [...state.hand];
@@ -78,6 +80,7 @@ export const useGameStore = create<
         });
     },
 
+    // can't place on occupied cell
     handToBoard: (row: number, col: number, index: number) => {
         set((state) => {
             const newBoard = state.board.map((r) => r.slice());
@@ -89,20 +92,16 @@ export const useGameStore = create<
         });
     },
 
+    // can't place on occupied cell
     boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number) => {
         set((state) => {
             const newBoard = state.board.map((r) => r.slice());
             const fromTile = newBoard[fromRow][fromCol];
-            const toTile = newBoard[toRow][toCol];
             newBoard[toRow][toCol] = fromTile;
             fromTile!.tile.position = { row: toRow, col: toCol };
 
-            if (toTile !== null && toTile.type === "tile") {
-                newBoard[fromRow][fromCol] = toTile;
-                toTile.tile.position = { row: fromRow, col: fromCol };
-            } else {
-                newBoard[fromRow][fromCol] = null;
-            }
+            newBoard[fromRow][fromCol] = null;
+
             return { board: newBoard };
         });
     },
@@ -114,14 +113,20 @@ export const useGameStore = create<
             const handTile = state.hand[index];
             const newHand = [...state.hand];
 
-            // // dropped to empty slot
-            // if (handTile.position) {
-            //     newHand[index] = fromTile!.tile as Tile;
-            //     newHand[index].position = null;
-            //     newBoard[fromRow][fromCol] = null;
-            // }
-            // // dropped into existing hand tile
-            // else {
+            console.log(handTile, "hand tile");
+            console.log(fromTile, "from tile");
+
+            if (handTile.position) {
+                for (let i = 0; i < newHand.length; i++) {
+                    if (newHand[i].id == (fromTile!.tile as Tile).id) {
+                        newHand[i] = handTile;
+                        break;
+                    }
+                }
+                newHand[index] = fromTile!.tile as Tile;
+                newHand[index].position = null;
+                newBoard[fromRow][fromCol] = null;
+            } else {
                 for (let i = 0; i < newHand.length; i++) {
                     if (newHand[i].id == (fromTile!.tile as Tile).id) {
                         newHand.splice(i, 1);
@@ -132,7 +137,7 @@ export const useGameStore = create<
                 newHand.splice(index, 0, fromTile!.tile as Tile);
                 newHand[index].position = null;
                 newBoard[fromRow][fromCol] = null;
-            // }
+            }
             return { board: newBoard, hand: newHand };
         });
     },

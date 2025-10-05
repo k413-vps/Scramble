@@ -26,7 +26,6 @@ function getEnchantmentClass(enchantment: Enchantment) {
 const animationDelay = `${Math.random() * -12}s`;
 
 export default function TileView({ tile, size = 48, index = null }: TileViewProps) {
-    console.log("Rendering TileView for tile:", tile, "at index:", index);
     const dragData: DragDataTile = {
         dragType: DragTypes.TILE,
         dragIndex: index,
