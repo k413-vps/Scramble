@@ -12,15 +12,20 @@ import {
     rectIntersection,
 } from "@dnd-kit/core";
 import { DragDataTile, DragTypes, DropDataBoard, DropDataTray, DropTypes } from "@/lib/dragTypes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TileView from "@/components/game/[id]/game/TileView";
 import { Tile } from "shared/types/tiles";
+import Leaderboard from "@/components/game/[id]/game/Leaderboard";
+import authClient from "@/lib/auth_client";
+import ActionsWindow from "@/components/game/[id]/game/ActionsWindow";
+import SpellsWindow from "@/components/game/[id]/game/SpellsWindow";
 
 export default function GamePage() {
     // const hand = useGameStore((state) => state.hand);
     const numRows = useGameStore((state) => state.numRows);
     const numCols = useGameStore((state) => state.numCols);
 
+    const setUserId = useGameStore((state) => state.setPlayerId);
     const handToHand = useGameStore((state) => state.handToHand);
     const handToBoard = useGameStore((state) => state.handToBoard);
     const boardToBoard = useGameStore((state) => state.boardToBoard);
@@ -28,6 +33,15 @@ export default function GamePage() {
 
     const [isDragging, setIsDragging] = useState(false);
     const [activeTile, setActiveTile] = useState<Tile | null>(null);
+
+    const { data: session } = authClient.useSession();
+
+
+    useEffect(() => {
+        if (session?.user.id) {
+            setUserId(session?.user.id);
+        } 
+    }, [session]);
 
     function handleDragStart(event: DragStartEvent) {
         const dragData = event.active.data.current as DragDataTile;
@@ -149,6 +163,9 @@ export default function GamePage() {
                         <TileRack />
                     </div>
                 </div>
+                <Leaderboard />
+                <ActionsWindow />
+                <SpellsWindow />
             </div>
         </DndContext>
     );

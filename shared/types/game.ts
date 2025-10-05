@@ -1,3 +1,4 @@
+import { ActionData } from "./actions";
 import { LetterCount, LetterPoints } from "./misc";
 import { Spell } from "./spells";
 import { Position, Tile } from "./tiles";
@@ -8,7 +9,7 @@ export interface ServerSideGame {
     enhancements: Enhancement[][];
     currentPlayerId: string;
     bag: string[];
-    turnHistory: [Action, string][]; // array of tuples
+    turnHistory: [ActionData, string][]; // array of tuples
     timePerTurn: number; // epoch time, 0 for unlimited
     timeOfLastTurn: number; // epoch time
     dictionary: DictionaryEnum;
@@ -30,7 +31,7 @@ export interface ClientSideGame {
     enhancements: Enhancement[][];
     currentPlayerId: string;
     hand: Tile[];
-    turnHistory: [Action, string][]; // array of tuples
+    turnHistory: [ActionData, string][]; // array of tuples
     timePerTurn: number; // epoch time, 0 for unlimited
     timeOfLastTurn: number; // epoch time
     dictionary: DictionaryEnum;
@@ -52,7 +53,6 @@ export interface BoardTile {
     type: "tile" | "blocked";
     tile: Tile | Blocked;
 }
-
 
 export interface ServerSidePlayer {
     id: string;
@@ -87,42 +87,6 @@ export enum Enhancement {
     START = "*",
     DOUBLE_START = "2*",
     MANA = "M",
-}
-
-interface Action {
-    playerId: string;
-    cost: number; // how much mana the action costs
-    points: number;
-}
-
-interface PlaceAction extends Action {
-    // place something
-    cost: 0;
-    crystalBall: boolean;
-    tiles: Tile[];
-}
-
-interface PassAction extends Action {
-    // skip your turn
-    cost: -3; // you gain 3 mana
-    points: 0;
-}
-
-interface ShuffleAction extends Action {
-    // throw away ALL your tiles and redraw
-    cost: 0;
-    points: 0;
-}
-
-interface WriteAction extends Action {
-    // adds a new word to the dictionary that can be used for the rest of the game
-    cost: 7;
-    points: 0;
-}
-
-interface SacrificeAction extends Action {
-    cost: -7; // you gain 10 mana
-    points: -20; // you lose 20 points
 }
 
 export type Dictionary = string[];

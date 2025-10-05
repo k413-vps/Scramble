@@ -5,6 +5,7 @@ import { Tile } from "shared/types/tiles";
 
 export const useGameStore = create<
     ClientSideGame & {
+        // setters
         init: (game: ClientSideGame) => void;
         addPlayer: (player: ClientSidePlayer) => void;
         setOwner: (playerId: string) => void;
@@ -13,10 +14,17 @@ export const useGameStore = create<
         handToBoard: (row: number, col: number, index: number) => void;
         boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
         boardToHand: (fromRow: number, fromCol: number, index: number) => void;
+        setPlayerId: (playerId: string) => void;
+
+        // getters
+        getCurrentPlayer: () => ClientSidePlayer | null;
+        getPlayer: () => ClientSidePlayer | null;
+
         numRows: number;
         numCols: number;
+        playerId: string; // the client player, (not the person whose turn it is)
     }
->((set) => ({
+>((set, get) => ({
     players: [],
     board: [],
     enhancements: [],
@@ -142,6 +150,17 @@ export const useGameStore = create<
         });
     },
 
+    setPlayerId: (playerId: string) => {
+        set(() => ({
+            playerId,
+        }));
+    },
+
+    // getters
+    getPlayer: () => get().players.find((p) => p.id === get().playerId) || null,
+    getCurrentPlayer: () => get().players.find((p) => p.id === get().currentPlayerId) || null,
+
     numRows: 15,
     numCols: 15,
+    playerId: "",
 }));
