@@ -18,6 +18,7 @@ import { Tile } from "shared/types/tiles";
 import Leaderboard from "@/components/game/[id]/game/Leaderboard";
 import authClient from "@/lib/auth_client";
 import ActionsWindow from "@/components/game/[id]/game/ActionsWindow";
+import SpellsWindow from "@/components/game/[id]/game/SpellsWindow";
 
 export default function GamePage() {
     // const hand = useGameStore((state) => state.hand);
@@ -164,6 +165,7 @@ export default function GamePage() {
                 </div>
                 <Leaderboard />
                 <ActionsWindow />
+                <SpellsWindow />
             </div>
         </DndContext>
     );

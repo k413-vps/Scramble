@@ -33,7 +33,7 @@ export const actions: Action[] = [
     },
     {
         type: ActionType.WRITE,
-        description: "Add a new word to the dictionary.",
+        description: "Add a new word to the dictionary for 7 mana.",
         cost: 7,
     },
     {

@@ -19,7 +19,7 @@ export enum SpellType {
     SWAP = "Swap",
 }
 
-export const spells: Spell[] = [
+export const spellList: Spell[] = [
     {
         cost: 12,
         turn: false,
