@@ -49,8 +49,13 @@ export interface ClientSideGame {
     ownerId: string;
 }
 
+export enum BoardTileType {
+    TILE = "tile",
+    BLOCKED = "blocked",
+}
+
 export interface BoardTile {
-    type: "tile" | "blocked";
+    type: BoardTileType;
     tile: Tile | Blocked;
 }
 
@@ -89,7 +94,7 @@ export enum Enhancement {
     MANA = "M",
 }
 
-export type Dictionary = string[];
+export type Dictionary = Set<string>;
 
 export enum DictionaryEnum {
     twl06 = "twl06",

@@ -4,6 +4,8 @@
         "module": "commonjs",
         "strict": true,
         "esModuleInterop": true,
-        "skipLibCheck": true
-    }
+        "skipLibCheck": true,
+        "resolveJsonModule": true
+    },
+    "exclude": ["node_modules", "./defaults/wordlists/json/sowpods.json", "./defaults/wordlists/json/twl06.json"]
 }

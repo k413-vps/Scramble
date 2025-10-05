@@ -3,13 +3,26 @@ import React, { useState } from "react";
 import { Rnd } from "react-rnd";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import ActionsEntry from "./ActionsEntry";
-import { actions } from "shared/types/actions";
+import { actions, ActionType } from "shared/types/actions";
+import { validPlay } from "@/utils/game/[id]/gameLogic";
 
 export default function ActionsWindow() {
     const [isMinimized, setIsMinimized] = useState(false);
     const [position, setPosition] = useState({ x: window.innerWidth - 350, y: 50 });
 
     const player = useGameStore((state) => state.getPlayer());
+    const currentPlayerId = useGameStore((state) => state.currentPlayerId);
+
+
+
+    const dictionaryEnum = useGameStore((state) => state.dictionary);
+    const board = useGameStore((state) => state.board);
+    const enhancements = useGameStore((state) => state.enhancements);
+
+    const isValidPlay = validPlay(board, enhancements, dictionaryEnum);
+
+    console.log("isValidPlay", isValidPlay);
+    const isCurrentPlayer = player?.id === currentPlayerId;
 
     const mana = player === null ? -1 : player.mana;
 
@@ -73,9 +86,19 @@ export default function ActionsWindow() {
                     }}
                 >
                     <div>
-                        {actions.map((action, index) => (
-                            <ActionsEntry key={action.type} action={action} index={index} mana={mana} />
-                        ))}
+                        <ActionsEntry action={actions[ActionType.PLAY]} onClick={() => {}} disabled={!isCurrentPlayer || !isValidPlay} />
+                        <ActionsEntry action={actions[ActionType.PASS]} onClick={() => {}} disabled={!isCurrentPlayer} />
+                        <ActionsEntry action={actions[ActionType.SHUFFLE]} onClick={() => {}} disabled={!isCurrentPlayer} />
+                        <ActionsEntry
+                            action={actions[ActionType.WRITE]}
+                            onClick={() => {}}
+                            disabled={mana < actions[ActionType.WRITE].cost || !isCurrentPlayer}
+                        />
+                        <ActionsEntry
+                            action={actions[ActionType.SACRIFICE]}
+                            onClick={() => {}}
+                            disabled={!isCurrentPlayer}
+                        />
                     </div>
                 </div>
             )}

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { ClientSideGame, ClientSidePlayer, DictionaryEnum } from "shared/types/game";
+import { BoardTileType, ClientSideGame, ClientSidePlayer, DictionaryEnum } from "shared/types/game";
 import { defaultPoints } from "shared/defaults/LetterPoints";
 import { Tile } from "shared/types/tiles";
 
@@ -92,7 +92,7 @@ export const useGameStore = create<
     handToBoard: (row: number, col: number, index: number) => {
         set((state) => {
             const newBoard = state.board.map((r) => r.slice());
-            newBoard[row][col] = { type: "tile", tile: state.hand[index] };
+            newBoard[row][col] = { type: BoardTileType.TILE, tile: state.hand[index] };
             const newHand = [...state.hand];
             newHand[index].position = { row, col };
 
