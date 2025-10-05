@@ -15,7 +15,6 @@ export enum SpellType {
     HIEROGLYPH = "Hieroglyph",
     HONE = "Hone",
     MANIFEST = "Manifest",
-    CRYSTALBALL = "CrystalBall",
     SWAP = "Swap",
 }
 
@@ -30,32 +29,31 @@ export const spellList: Spell[] = [
         cost: 10,
         turn: false,
         type: SpellType.BLOCK,
-        description: "Choose an empty square. Nobody can play on this square.",
+        description: "Block a square from being played.",
     },
     {
         cost: 7,
         turn: false,
         type: SpellType.CURSE,
-        description:
-            "Choose an empty square. When something is played on this square, the letter played on it will have a base score of -5.",
+        description: "Square will have a base score of -5.",
     },
     {
         cost: 5,
         turn: false,
         type: SpellType.GRABBER,
-        description: "Choose a player. Force them to lose all their tiles and redraw.",
+        description: "Force a player to lose all their tiles and redraw.",
     },
     {
         cost: 3,
         turn: false,
         type: SpellType.PICTOGRAPH,
-        description: "Draw a random negative letter worth 1 - 3 points.",
+        description: "Draw a negative letter worth 1 - 3 points.",
     },
     {
         cost: 5,
         turn: false,
         type: SpellType.PETROGLYPH,
-        description: "Draw a random negative letter worth 4+ points.",
+        description: "Draw a negative letter worth 4+ points.",
     },
     {
         cost: 7,
@@ -67,25 +65,18 @@ export const spellList: Spell[] = [
         cost: 15,
         turn: false,
         type: SpellType.HONE,
-        description: "Permanently increases the chance of a tile being enchanted when drawn.",
+        description: "Increases the chance of a tile being enchanted",
     },
     {
         cost: 10,
         turn: false,
         type: SpellType.MANIFEST,
-        description: "Choose a non-enhanced empty square. 10% chance it's 3W, 20% 3L, 30% 2W, 40% 2L.",
-    },
-    {
-        cost: 8,
-        turn: true,
-        type: SpellType.CRYSTALBALL,
-        description: "Play twice this turn. The second play is worth half points.",
+        description: "10% 3W, 20% 3L, 30% 2W, 40% 2L.",
     },
     {
         cost: 5,
         turn: true,
         type: SpellType.SWAP,
-        description:
-            "Swap one of the tiles in your hand with a tile on the board. If it's a valid word, gain 0.5 points for the word.",
+        description: "Swap two tiles. Gain x.5 points for the word.",
     },
 ];

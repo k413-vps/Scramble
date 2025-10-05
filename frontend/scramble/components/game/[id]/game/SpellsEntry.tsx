@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Spell } from "shared/types/spells";
-import { Brush, Shield, Zap, Hand, Image, Layers, Eye, Star, WandSparkles , Volleyball, Repeat } from "lucide-react";
+import { Brush, Shield, Zap, Hand, Image, Layers, Eye, Star, WandSparkles, Volleyball, Repeat } from "lucide-react";
 
 interface ActionsEntryProps {
     spell: Spell;
@@ -78,6 +78,7 @@ export default function ActionsEntry({ spell, mana }: ActionsEntryProps) {
                     {getIcon(spell.type)}
                     <span style={{ fontWeight: "bold", fontSize: "16px" }}>{spell.type}</span>
                 </div>
+                <span style={{ fontWeight: "bold", fontSize: "16px" }}>{spell.cost}</span>
             </button>
             {isTooltipVisible && (
                 <div
