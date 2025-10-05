@@ -343,34 +343,3 @@
         background-position-y: 12px;
     }
 }
-
-.tile-tooltip-wrapper {
-    position: relative;
-}
-
-.tile-tooltip {
-    visibility: hidden;
-    opacity: 0;
-    position: absolute;
-    left: 50%;
-    bottom: 110%;
-    transform: translateX(-50%);
-    background: rgba(40, 0, 0, 0.95);
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    pointer-events: none;
-    transition: opacity 0.2s, visibility 0.2s;
-    z-index: 10;
-    box-shadow: 0 2px 8px rgba(255, 59, 59, 0.18);
-    border: 1px solid #ff3b3b;
-}
-
-.tile-tooltip-wrapper:hover .tile-tooltip {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* end go crazy */

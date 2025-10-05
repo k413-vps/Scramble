@@ -1,97 +1,91 @@
 export interface Spell {
     cost: number;
     turn: boolean; // does it need to be your turn when you cast this spell?
-    type: string;
+    type: SpellType;
+    description: string;
 }
 
-export interface PaintBrush extends Spell {
-    cost: 12;
-    turn: false;
-    type: "PaintBrush";
+export enum SpellType {
+    PAINTBRUSH = "PaintBrush",
+    BLOCK = "Block",
+    CURSE = "Curse",
+    GRABBER = "Grabber",
+    PICTOGRAPH = "Pictograph",
+    PETROGLYPH = "Petroglyph",
+    HIEROGLYPH = "Hieroglyph",
+    HONE = "Hone",
+    MANIFEST = "Manifest",
+    CRYSTALBALL = "CrystalBall",
+    SWAP = "Swap",
 }
 
-export interface Block extends Spell {
-    cost: 10;
-    turn: false;
-    type: "Block";
-}
-
-export interface Curse extends Spell {
-    cost: 7;
-    turn: false;
-    type: "Curse";
-}
-
-export interface Grabber extends Spell {
-    cost: 5;
-    turn: false;
-    type: "Grabber";
-}
-
-export interface Pictograph extends Spell {
-    cost: 3;
-    turn: false;
-    type: "Pictograph";
-}
-
-export interface Petroglyph extends Spell {
-    cost: 5;
-    turn: false;
-    type: "Petroglyph";
-}
-
-export interface Hieroglyph extends Spell {
-    cost: 7;
-    turn: false;
-    type: "Hieroglyph";
-}
-
-export interface Hone extends Spell {
-    cost: 15;
-    turn: false;
-    type: "Hone";
-}
-
-export interface Manifest extends Spell {
-    cost: 10;
-    turn: true;
-    type: "Manifest";
-}
-
-export interface CrystalBall extends Spell {
-    cost: 8;
-    turn: true;
-    type: "CrystalBall";
-}
-
-export interface Swap extends Spell {
-    cost: 5;
-    turn: true;
-    type: "Swap";
-}
-
-/**
- * Idea for spells.
- * paint brush: permanent hand size + 1
- *
- * block: choose an empty square. nobody can play on this square. When its your turn, you have to play on the block. only one block per person at a time
- *
- * curse: choose an empty square. when something is played on this square, the letter played on it is set to have points = -5.
- * Players don't know which square is cursed until you play on it (except for the player who played it)
- *
- * grabber: choose a player. force them to lose all their tiles and redraw
- *
- * pictograph: draw an extra random letter worth 1 - 3 points
- *
- * petroglyph: draw an extra random letter worth 4+ points
- *
- * hieroglyph: draw an extra blank
- *
- * hone: increases the chance of a tile being enchanted when drawn
- *
- * manifest: choose a non enhanced empty square. 10% chance its 3W, 20% 3L, 30% 2W, 40% 2L
- *
- * crystall ball: play twice. second play is worth half points.
- *
- * swap: swap one of the tiles in your hand with a tile on the board if its a valid word. gain .5 points for the word.
- */
+export const spells: Spell[] = [
+    {
+        cost: 12,
+        turn: false,
+        type: SpellType.PAINTBRUSH,
+        description: "Permanently increases your hand size by 1.",
+    },
+    {
+        cost: 10,
+        turn: false,
+        type: SpellType.BLOCK,
+        description: "Choose an empty square. Nobody can play on this square.",
+    },
+    {
+        cost: 7,
+        turn: false,
+        type: SpellType.CURSE,
+        description:
+            "Choose an empty square. When something is played on this square, the letter played on it will have a base score of -5.",
+    },
+    {
+        cost: 5,
+        turn: false,
+        type: SpellType.GRABBER,
+        description: "Choose a player. Force them to lose all their tiles and redraw.",
+    },
+    {
+        cost: 3,
+        turn: false,
+        type: SpellType.PICTOGRAPH,
+        description: "Draw a random negative letter worth 1 - 3 points.",
+    },
+    {
+        cost: 5,
+        turn: false,
+        type: SpellType.PETROGLYPH,
+        description: "Draw a random negative letter worth 4+ points.",
+    },
+    {
+        cost: 7,
+        turn: false,
+        type: SpellType.HIEROGLYPH,
+        description: "Draw a negative blank tile.",
+    },
+    {
+        cost: 15,
+        turn: false,
+        type: SpellType.HONE,
+        description: "Permanently increases the chance of a tile being enchanted when drawn.",
+    },
+    {
+        cost: 10,
+        turn: false,
+        type: SpellType.MANIFEST,
+        description: "Choose a non-enhanced empty square. 10% chance it's 3W, 20% 3L, 30% 2W, 40% 2L.",
+    },
+    {
+        cost: 8,
+        turn: true,
+        type: SpellType.CRYSTALBALL,
+        description: "Play twice this turn. The second play is worth half points.",
+    },
+    {
+        cost: 5,
+        turn: true,
+        type: SpellType.SWAP,
+        description:
+            "Swap one of the tiles in your hand with a tile on the board. If it's a valid word, gain 0.5 points for the word.",
+    },
+];

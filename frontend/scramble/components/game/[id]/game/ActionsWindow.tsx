@@ -1,15 +1,17 @@
 import { useGameStore } from "@/utils/game/[id]/store";
 import React, { useState } from "react";
 import { Rnd } from "react-rnd";
-import LeaderboardPlayer from "./LeaderboardEntry";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import ActionsEntry from "./ActionsEntry";
+import { actions } from "shared/types/actions";
 
-export default function Leaderboard() {
+export default function ActionsWindow() {
     const [isMinimized, setIsMinimized] = useState(false);
-    const [position, setPosition] = useState({ x: 50, y: 50 });
-    const players = useGameStore((state) => state.players);
+    const [position, setPosition] = useState({ x: window.innerWidth - 350, y: 50 });
 
-    const currentPlayer = useGameStore((state) => state.currentPlayerId);
+    const player = useGameStore((state) => state.getPlayer());
+
+    const mana = player === null ? -1 : player.mana;
 
     const width = 300;
     const height = 400;
@@ -46,7 +48,7 @@ export default function Leaderboard() {
                 }}
                 className="leaderboard-drag-handle"
             >
-                <span style={{ fontWeight: "bold" }}>Leaderboard</span>
+                <span style={{ fontWeight: "bold" }}>Actions</span>
                 <button
                     onClick={() => setIsMinimized(!isMinimized)}
                     style={{
@@ -71,13 +73,8 @@ export default function Leaderboard() {
                     }}
                 >
                     <div>
-                        {players.map((player, index) => (
-                            <LeaderboardPlayer
-                                key={player.id}
-                                player={player}
-                                index={index}
-                                currentPlayer={player.id === currentPlayer}
-                            />
+                        {actions.map((action, index) => (
+                            <ActionsEntry key={action.type} action={action} index={index} mana={mana} />
                         ))}
                     </div>
                 </div>
