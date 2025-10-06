@@ -53,8 +53,7 @@ export interface ActionData {
 
 export interface PlaceAction extends ActionData {
     type: ActionType.PLAY;
-    crystalBall: boolean;
-    tiles: Tile[];
+    hand: Tile[];
 }
 
 export interface PassAction extends ActionData {

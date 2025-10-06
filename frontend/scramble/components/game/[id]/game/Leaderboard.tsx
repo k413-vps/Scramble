@@ -8,11 +8,14 @@ export default function Leaderboard() {
     const [isMinimized, setIsMinimized] = useState(false);
     const [position, setPosition] = useState({ x: 50, y: 50 });
     const players = useGameStore((state) => state.players);
+    const turnOrder = useGameStore((state) => state.playerTurnOrder);
 
     const currentPlayer = useGameStore((state) => state.currentPlayerId);
 
     const width = 300;
     const height = 400;
+
+    console.log("turnOrder is", turnOrder);
 
     return (
         <Rnd
@@ -71,12 +74,12 @@ export default function Leaderboard() {
                     }}
                 >
                     <div>
-                        {players.map((player, index) => (
+                        {turnOrder.map((playerId, index) => (
                             <LeaderboardPlayer
-                                key={player.id}
-                                player={player}
+                                key={playerId}
+                                player={players[playerId]}
                                 index={index}
-                                currentPlayer={player.id === currentPlayer}
+                                currentPlayer={playerId === currentPlayer}
                             />
                         ))}
                     </div>

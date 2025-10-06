@@ -18,6 +18,12 @@ export enum SpellType {
     SWAP = "Swap",
 }
 
+export interface SpellData {
+    playerId: string;
+    points: number; // points gained
+    type: SpellType;
+}
+
 export const spellList: Spell[] = [
     {
         cost: 12,

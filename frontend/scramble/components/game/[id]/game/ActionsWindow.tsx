@@ -3,31 +3,61 @@ import React, { useState } from "react";
 import { Rnd } from "react-rnd";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import ActionsEntry from "./ActionsEntry";
-import { actions, ActionType } from "shared/types/actions";
+import { actions, ActionType, PlaceAction } from "shared/types/actions";
 import { validPlay } from "@/utils/game/[id]/gameLogic";
+import { Socket } from "socket.io-client";
+import { ActionToServer } from "shared/types/SocketMessages";
 
-export default function ActionsWindow() {
+interface ActionsWindowProps {
+    socket: Socket;
+}
+
+export default function ActionsWindow({ socket }: ActionsWindowProps) {
     const [isMinimized, setIsMinimized] = useState(false);
     const [position, setPosition] = useState({ x: window.innerWidth - 350, y: 50 });
 
     const player = useGameStore((state) => state.getPlayer());
+    const playerId = useGameStore((state) => state.playerId);
     const currentPlayerId = useGameStore((state) => state.currentPlayerId);
-
-
-
     const dictionaryEnum = useGameStore((state) => state.dictionary);
     const board = useGameStore((state) => state.board);
     const enhancements = useGameStore((state) => state.enhancements);
+    const hand = useGameStore((state) => state.hand);
+
+    const players = useGameStore((state) => state.players);
 
     const isValidPlay = validPlay(board, enhancements, dictionaryEnum);
+    const isCurrentPlayer = playerId === currentPlayerId;
 
-    console.log("isValidPlay", isValidPlay);
-    const isCurrentPlayer = player?.id === currentPlayerId;
 
     const mana = player === null ? -1 : player.mana;
 
     const width = 300;
     const height = 400;
+
+    function handlePlay() {
+        const actionData: PlaceAction = {
+            type: ActionType.PLAY,
+            hand: hand,
+            playerId: currentPlayerId,
+            points: 0,
+            mana: 0,
+        };
+
+        const message: ActionToServer = {
+            actionData: actionData,
+        };
+
+        socket.emit("action", message);
+    }
+
+    function handlePass() {}
+
+    function handleShuffle() {}
+
+    function handleWrite() {}
+
+    function handleSacrifice() {}
 
     return (
         <Rnd
@@ -86,17 +116,29 @@ export default function ActionsWindow() {
                     }}
                 >
                     <div>
-                        <ActionsEntry action={actions[ActionType.PLAY]} onClick={() => {}} disabled={!isCurrentPlayer || !isValidPlay} />
-                        <ActionsEntry action={actions[ActionType.PASS]} onClick={() => {}} disabled={!isCurrentPlayer} />
-                        <ActionsEntry action={actions[ActionType.SHUFFLE]} onClick={() => {}} disabled={!isCurrentPlayer} />
+                        <ActionsEntry
+                            action={actions[ActionType.PLAY]}
+                            onClick={handlePlay}
+                            disabled={!isCurrentPlayer || !isValidPlay}
+                        />
+                        <ActionsEntry
+                            action={actions[ActionType.PASS]}
+                            onClick={handlePass}
+                            disabled={!isCurrentPlayer}
+                        />
+                        <ActionsEntry
+                            action={actions[ActionType.SHUFFLE]}
+                            onClick={handleShuffle}
+                            disabled={!isCurrentPlayer}
+                        />
                         <ActionsEntry
                             action={actions[ActionType.WRITE]}
-                            onClick={() => {}}
+                            onClick={handleWrite}
                             disabled={mana < actions[ActionType.WRITE].cost || !isCurrentPlayer}
                         />
                         <ActionsEntry
                             action={actions[ActionType.SACRIFICE]}
-                            onClick={() => {}}
+                            onClick={handleSacrifice}
                             disabled={!isCurrentPlayer}
                         />
                     </div>

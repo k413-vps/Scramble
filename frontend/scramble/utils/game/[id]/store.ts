@@ -7,9 +7,9 @@ export const useGameStore = create<
     ClientSideGame & {
         // setters
         init: (game: ClientSideGame) => void;
-        addPlayer: (player: ClientSidePlayer) => void;
+        addPlayer: (player: ClientSidePlayer, playerId: string) => void;
         setOwner: (playerId: string) => void;
-        startGame: (players: ClientSidePlayer[], hand: Tile[], tilesRemaining: number) => void;
+        startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number) => void;
         handToHand: (index1: number, index2: number) => void;
         handToBoard: (row: number, col: number, index: number) => void;
         boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
@@ -25,7 +25,8 @@ export const useGameStore = create<
         playerId: string; // the client player, (not the person whose turn it is)
     }
 >((set, get) => ({
-    players: [],
+    players: {},
+    playerTurnOrder: [],
     board: [],
     enhancements: [],
     currentPlayerId: "",
@@ -47,12 +48,12 @@ export const useGameStore = create<
     gameStarted: false,
     ownerId: "",
 
-    startGame: (players: ClientSidePlayer[], hand: Tile[], tilesRemaining: number) => {
+    startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number) => {
         set(() => ({
             gameStarted: true,
-            players,
+            playerTurnOrder: turnOrder,
             hand,
-            currentPlayerId: players[0].id,
+            currentPlayerId: turnOrder[0],
             tilesRemaining,
         }));
     },
@@ -65,10 +66,11 @@ export const useGameStore = create<
         }));
     },
 
-    addPlayer: (player: ClientSidePlayer) => {
-        set((state) => ({
-            players: [...state.players, player],
-        }));
+    addPlayer: (player: ClientSidePlayer, playerId: string) => {
+        set((state) => {
+            const newPlayers = { ...state.players, [playerId]: player };
+            return { players: newPlayers };
+        });
     },
 
     setOwner: (playerId: string) => {
@@ -157,8 +159,8 @@ export const useGameStore = create<
     },
 
     // getters
-    getPlayer: () => get().players.find((p) => p.id === get().playerId) || null,
-    getCurrentPlayer: () => get().players.find((p) => p.id === get().currentPlayerId) || null,
+    getPlayer: () => get().players[get().playerId],
+    getCurrentPlayer: () => get().players[get().currentPlayerId],
 
     numRows: 15,
     numCols: 15,

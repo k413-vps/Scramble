@@ -19,13 +19,18 @@ import Leaderboard from "@/components/game/[id]/game/Leaderboard";
 import authClient from "@/lib/auth_client";
 import ActionsWindow from "@/components/game/[id]/game/ActionsWindow";
 import SpellsWindow from "@/components/game/[id]/game/SpellsWindow";
+import { Socket } from "socket.io-client";
 
-export default function GamePage() {
+type GamePageProps = {
+    socket: Socket;
+};
+
+export default function GamePage({ socket }: GamePageProps) {
     // const hand = useGameStore((state) => state.hand);
     const numRows = useGameStore((state) => state.numRows);
     const numCols = useGameStore((state) => state.numCols);
 
-    const setUserId = useGameStore((state) => state.setPlayerId);
+    const playerId = useGameStore((state) => state.playerId);
     const handToHand = useGameStore((state) => state.handToHand);
     const handToBoard = useGameStore((state) => state.handToBoard);
     const boardToBoard = useGameStore((state) => state.boardToBoard);
@@ -33,15 +38,6 @@ export default function GamePage() {
 
     const [isDragging, setIsDragging] = useState(false);
     const [activeTile, setActiveTile] = useState<Tile | null>(null);
-
-    const { data: session } = authClient.useSession();
-
-
-    useEffect(() => {
-        if (session?.user.id) {
-            setUserId(session?.user.id);
-        } 
-    }, [session]);
 
     function handleDragStart(event: DragStartEvent) {
         const dragData = event.active.data.current as DragDataTile;
@@ -70,8 +66,6 @@ export default function GamePage() {
     }
 
     function handleDragTileDropTray(dropData: DropDataTray, dragData: DragDataTile) {
-        console.log("Drag tile drop tray");
-
         if (dragData.dragIndex === null) {
             boardToHand(dragData.tile.position!.row, dragData.tile.position!.col, dropData.dropIndex);
             return;
@@ -80,8 +74,6 @@ export default function GamePage() {
     }
 
     function handleDragTileDropBoard(dropData: DropDataBoard, dragData: DragDataTile) {
-        console.log("Drag tile drop board");
-
         if (dragData.dragIndex === null) {
             boardToBoard(dragData.tile.position!.row, dragData.tile.position!.col, dropData.rowNum, dropData.colNum);
             return;
@@ -164,7 +156,7 @@ export default function GamePage() {
                     </div>
                 </div>
                 <Leaderboard />
-                <ActionsWindow />
+                {playerId !== "" && <ActionsWindow socket={socket} />}
                 <SpellsWindow />
             </div>
         </DndContext>

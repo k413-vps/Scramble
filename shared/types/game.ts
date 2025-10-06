@@ -1,15 +1,35 @@
 import { ActionData } from "./actions";
-import { LetterCount, LetterPoints } from "./misc";
-import { Spell } from "./spells";
+import { LetterPoints } from "./misc";
+import { Spell, SpellData } from "./spells";
 import { Position, Tile } from "./tiles";
 
+export enum TurnType {
+    SPELL = "SPELL",
+    ACTION = "ACTION",
+}
+export interface Turn {
+    type: TurnType;
+}
+
+export interface SpellTurn extends Turn {
+    type: TurnType.SPELL;
+    spellData: SpellData;
+}
+
+export interface ActionTurn extends Turn {
+    type: TurnType.ACTION;
+    actionData: ActionData;
+}
+
+export type ServerPlayerMap = { [id: string]: ServerSidePlayer };
 export interface ServerSideGame {
-    players: ServerSidePlayer[]; // player turn goes in this order
+    playerTurnOrder: string[]; // player turn goes in this order
+    players: ServerPlayerMap;
     board: Array<Array<BoardTile | null>>;
     enhancements: Enhancement[][];
     currentPlayerId: string;
     bag: string[];
-    turnHistory: [ActionData, string][]; // array of tuples
+    turnHistory: ActionData[];
     timePerTurn: number; // epoch time, 0 for unlimited
     timeOfLastTurn: number; // epoch time
     dictionary: DictionaryEnum;
@@ -25,13 +45,15 @@ export interface ServerSideGame {
     ownerId: string;
 }
 
+export type ClientPlayerMap = { [id: string]: ClientSidePlayer };
 export interface ClientSideGame {
-    players: ClientSidePlayer[]; // player turn goes in this order
+    playerTurnOrder: string[]; // player turn goes in this order
+    players: ClientPlayerMap;
     board: Array<Array<BoardTile | null>>;
     enhancements: Enhancement[][];
     currentPlayerId: string;
     hand: Tile[];
-    turnHistory: [ActionData, string][]; // array of tuples
+    turnHistory: ActionData[];
     timePerTurn: number; // epoch time, 0 for unlimited
     timeOfLastTurn: number; // epoch time
     dictionary: DictionaryEnum;
@@ -60,7 +82,6 @@ export interface BoardTile {
 }
 
 export interface ServerSidePlayer {
-    id: string;
     profilePicture: string;
     name: string;
     hand: Array<Tile>;
@@ -70,7 +91,6 @@ export interface ServerSidePlayer {
 }
 
 export interface ClientSidePlayer {
-    id: string;
     profilePicture: string;
     name: string;
     points: number;

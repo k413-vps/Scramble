@@ -45,7 +45,6 @@ export function CreateGameForm() {
 
     const onSubmit = (data: CreateGameFormValues) => {
         const request = formToRequest(data);
-        console.log(data);
 
         mutation.mutate(request);
     };

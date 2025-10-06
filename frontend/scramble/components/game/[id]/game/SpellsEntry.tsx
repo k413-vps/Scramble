@@ -55,7 +55,6 @@ export default function ActionsEntry({ spell, mana }: ActionsEntryProps) {
             <button
                 onClick={() => {
                     if (!isDisabled) {
-                        console.log(`Action selected: ${spell.type}`);
                     }
                 }}
                 disabled={isDisabled}

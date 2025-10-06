@@ -1,3 +1,4 @@
+import { ActionData } from "./actions";
 import { ClientSidePlayer } from "./game";
 import { Tile } from "./tiles";
 
@@ -18,13 +19,23 @@ export interface JoinToServer {
 
 export interface JoinToClient {
     player: ClientSidePlayer;
+    playerId: string;
     owner: boolean;
 }
 
 export interface StartToServer {}
 
 export interface StartToClient {
-    players: ClientSidePlayer[];
+    // players: ClientSidePlayer[];
+    turnOrder: string[];
     hand: Tile[];
     tilesRemaining: number;
+}
+
+export interface ActionToServer {
+    actionData: ActionData;
+}
+
+export interface ActionToClient {
+    actionData: ActionData;
 }

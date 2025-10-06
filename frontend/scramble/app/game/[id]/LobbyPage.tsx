@@ -41,9 +41,9 @@ export default function LobbyPage({ userId, socket }: LobbyPageProps) {
                 <CardContent className="p-4">
                     <h2 className="text-xl font-semibold mb-2">Players</h2>
                     <ul className="space-y-2">
-                        {gameState.players.map((p) => (
-                            <li key={p.id} className="flex justify-between">
-                                <span>{p.name}</span>
+                        {Object.entries(gameState.players).map(([id, player]) => (
+                            <li key={id} className="flex justify-between">
+                                <span>{player.name}</span>
                             </li>
                         ))}
                     </ul>
