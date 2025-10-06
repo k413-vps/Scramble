@@ -25,12 +25,12 @@ export function parseCreateGameRequest(data: CreateGameRequest): ServerSideGame 
         }
     }
 
-    console.log(data.letterFrequency);
     const bag = Object.entries(data.letterFrequency).flatMap(([letter, count]) => Array(count).fill(letter));
     const shuffledBag = shuffle(bag, rng);
 
     const ans: ServerSideGame = {
-        players: [],
+        players: {},
+        playerTurnOrder: [],
         board: board,
         enhancements: enchantments,
         currentPlayerId: "",

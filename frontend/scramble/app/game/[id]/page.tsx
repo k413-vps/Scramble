@@ -33,6 +33,8 @@ export default function Page() {
 
     const players = useGameStore((state) => state.players);
 
+    const setPlayerId = useGameStore((state) => state.setPlayerId);
+
     async function fetchState(): Promise<ClientSideGame | null> {
         const res = (await api.get(`${process.env.NEXT_PUBLIC_BACKEND_AUTH_PATH}/game/${roomId}`))
             .data as GetGameResponse;
@@ -68,26 +70,28 @@ export default function Page() {
     } = authClient.useSession();
 
     const handleJoin = (msg: JoinToClient) => {
-        useGameStore.getState().addPlayer(msg.player);
+        useGameStore.getState().addPlayer(msg.player, msg.playerId);
         if (msg.owner) {
-            useGameStore.getState().setOwner(msg.player.id);
+            useGameStore.getState().setOwner(msg.playerId);
         }
     };
 
     const handleStart = (msg: StartToClient) => {
-        useGameStore.getState().startGame(msg.players, msg.hand, msg.tilesRemaining);
+        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.tilesRemaining);
     };
 
     useEffect(() => {
         if (roomId && !authPending && !getGameLoading) {
-            const userId = session?.user.id;
+            const userId = session?.user.id!;
+
             socket = io(process.env.NEXT_PUBLIC_WS_URL, {
                 path: process.env.NEXT_PUBLIC_WS_PATH,
                 query: { roomId, page, userId },
                 transports: ["websocket"],
             });
 
-            const alreadyJoined = players.some((player) => player.id === userId);
+            const alreadyJoined = userId! in players;
+
             if (!alreadyJoined && session && session.user.name && session.user.image) {
                 const socketMessage: JoinToServer = {
                     name: session.user.name,
@@ -98,6 +102,8 @@ export default function Page() {
 
             socket.on("join_game", handleJoin);
             socket.on("start_game", handleStart);
+        } else if (!authPending) {
+            setPlayerId(session!.user.id);
         }
 
         return () => {
@@ -116,9 +122,22 @@ export default function Page() {
     }
 
     if (gameStarted) {
-        return (
-                <GamePage />
-        );
+        const userId = session?.user.id!;
+
+        const alreadyJoined = userId in players;
+
+        if (!alreadyJoined) {
+            return <LoadingPage />;
+        }
+
+        if (!alreadyJoined && session && session.user.name && session.user.image) {
+            const socketMessage: JoinToServer = {
+                name: session.user.name,
+                profilePicture: session.user.image,
+            };
+            socket.emit("join_game", socketMessage);
+        }
+        return <GamePage socket={socket} />;
     }
 
     return <LobbyPage userId={session.user.id} socket={socket} />;

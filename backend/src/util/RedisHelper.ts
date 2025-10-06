@@ -1,7 +1,7 @@
 import { createClient, RedisClientType } from "redis";
 import seedrandom from "seedrandom";
 import { shuffle } from "shared/functions/util";
-import { ServerSidePlayer, ServerSideGame } from "shared/types/game";
+import { ServerSidePlayer, ServerSideGame, BoardTile, BoardTileType, ServerPlayerMap } from "shared/types/game";
 import { drawTiles } from "./GameLogic";
 import { Tile } from "shared/types/tiles";
 import { LetterPoints } from "shared/types/misc";
@@ -96,23 +96,32 @@ export async function checkPlayerExists(
     userId: string,
     roomId: string
 ): Promise<boolean> {
-    const players = await getPlayers(redisClient, roomId);
+    // const players = await getPlayers(redisClient, roomId);
 
-    return players.some((player) => player.id === userId);
+    // return players.some((player) => player.id === userId);
+    const key = `games:${roomId}`;
+    const path = `.players.${userId}`;
+    const res = (await redisClient.sendCommand(["JSON.TYPE", key, path])) as unknown as string;
+
+    return res !== null;
 }
 
 export async function addPlayer(
     redisClient: RedisClientType,
     player: ServerSidePlayer,
+    playerId: string,
     roomId: string
 ): Promise<number> {
+    console.log("adding player");
     const key = `games:${roomId}`;
 
-    const path = ".players";
+    const playersPath = `players.${playerId}`;
 
-    const size = await redisClient.json.arrAppend(key, path, player as any);
+    await redisClient.json.set(key, playersPath, player as any);
 
-    return size as number;
+    const size = await redisClient.sendCommand(["JSON.OBJLEN", key, "players"]);
+    console.log("num players", size);
+    return size as any as number;
 }
 
 export async function setOwner(redisClient: RedisClientType, userId: string, roomId: string): Promise<void> {
@@ -125,7 +134,11 @@ export async function drawTilesRedis(redisClient: RedisClientType, roomId: strin
     return [];
 }
 
-export async function startGame(redisClient: RedisClientType, roomId: string): Promise<[ServerSidePlayer[], number]> {
+// returns players, turn order, and number of tiles left in bag
+export async function startGame(
+    redisClient: RedisClientType,
+    roomId: string
+): Promise<[ServerPlayerMap, string[], number]> {
     const key = `games:${roomId}`;
 
     const result = (await redisClient.sendCommand([
@@ -140,7 +153,7 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
 
     const json = JSON.parse(result);
 
-    const players = json[".players"] as ServerSidePlayer[];
+    const players = json[".players"] as ServerPlayerMap;
     const bag = json[".bag"] as string[];
     const handSize = json[".handSize"] as number;
     const seed = json[".seed"] as number;
@@ -148,21 +161,66 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
 
     const rng = seedrandom(seed.toString());
 
-    const shufflePlayers = shuffle(players, rng);
+    const playerIds = Object.keys(players);
+    const playerOrder = shuffle(playerIds, rng);
 
-    for (const player of shufflePlayers) {
+    for (const playerId of playerOrder) {
+        const player = players[playerId];
         const tiles = await drawTiles(bag, player.hand, handSize, player.purchasedSpells, seed, points);
         player.hand.push(...tiles);
     }
 
-    const currentPlayerId = shufflePlayers[0].id;
+    const currentPlayerId = playerOrder[0];
 
     const gameStarted = true;
 
     await redisClient.json.set(key, ".gameStarted", gameStarted);
     await redisClient.json.set(key, ".currentPlayerId", currentPlayerId);
-    await redisClient.json.set(key, ".players", JSON.parse(JSON.stringify(shufflePlayers)));
     await redisClient.json.set(key, ".bag", JSON.parse(JSON.stringify(bag)));
+    await redisClient.json.set(key, ".playerTurnOrder", playerOrder);
+    await redisClient.json.set(key, ".players", JSON.parse(JSON.stringify(players)));
 
-    return [shufflePlayers, bag.length];
+    return [players, playerOrder, bag.length];
+}
+
+export async function placeActionBoardUpdate(
+    redisClient: RedisClientType,
+    roomId: string,
+    hand: Tile[]
+): Promise<void> {
+    const key = `games:${roomId}`;
+
+    const boardRaw = (await redisClient.sendCommand(["JSON.GET", key, ".board"])) as unknown as string;
+
+    const boardObj = JSON.parse(boardRaw) as Array<Array<BoardTile | null>>;
+
+    const plannedTiles = hand.filter((tile) => tile.position !== null);
+
+    for (const tile of plannedTiles) {
+        const pos = tile.position!;
+        tile.placed = true;
+
+        const boardTile: BoardTile = {
+            type: BoardTileType.TILE,
+            tile: tile,
+        };
+
+        boardObj[pos.row][pos.col] = boardTile;
+    }
+
+    await redisClient.json.set(key, ".board", JSON.parse(JSON.stringify(boardObj)));
+}
+
+export async function placeActionPlayerUpdate(
+    redisClient: RedisClientType,
+    roomId: string,
+    playerId: string,
+    points: number,
+    mana: number,
+    hand: Tile[]
+): Promise<void> {
+    const key = `games:${roomId}`;
+
+    const players = (await redisClient.sendCommand(["JSON.GET", key, ".players"])) as unknown as string;
+    const playersObj = JSON.parse(players) as ServerPlayerMap;
 }

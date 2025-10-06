@@ -15,7 +15,6 @@ export default function SpellsWindow() {
 
     const width = 300;
     const height = 400;
-    console.log(spellList, "spells me");
     return (
         <Rnd
             size={{ width: width, height: isMinimized ? 40 : height }}

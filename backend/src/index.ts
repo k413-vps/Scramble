@@ -35,12 +35,15 @@ import {
     JoinToServer,
     StartToClient,
     StartToServer,
+    ActionToServer,
 } from "shared/types/SocketMessages";
 
 import { createRoom, getRoom, RedisSetup, checkPlayerExists, addPlayer, setOwner, startGame } from "./util/RedisHelper";
 import { parseCreateGameRequest } from "./util/APIParse";
 import { ServerSideGame, ServerSidePlayer, ClientSidePlayer } from "shared/types/game";
 import { convertGame, convertPlayer } from "./util/ServerClientTranslation";
+import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
+import { handlePass, handlePlay, handleSacrifice, handleShuffle, handleWrite } from "./util/HandleActions";
 
 async function main() {
     const env = process.argv[2] || "dev";
@@ -248,7 +251,6 @@ async function main() {
             }
 
             const serverPlayer: ServerSidePlayer = {
-                id: userId,
                 profilePicture: msg.profilePicture,
                 name: msg.name,
                 hand: [],
@@ -257,7 +259,7 @@ async function main() {
                 purchasedSpells: [],
             };
 
-            const size = await addPlayer(redisClient, serverPlayer, roomId);
+            const size = await addPlayer(redisClient, serverPlayer, userId, roomId);
 
             const clientPlayer: ClientSidePlayer = convertPlayer(serverPlayer);
 
@@ -268,21 +270,23 @@ async function main() {
             const res: JoinToClient = {
                 player: clientPlayer,
                 owner: size === 1,
+                playerId: userId,
             };
             io.to(uniqueId).emit("join_game", res);
         });
 
         socket.on("start_game", async (msg: StartToServer) => {
-            const [shuffledPlayers, tilesRemaining] = await startGame(redisClient, roomId);
+            const [players, playerOrder, tilesRemaining] = await startGame(redisClient, roomId);
 
             const socketsInRoom = await io.in(uniqueId).fetchSockets();
 
             for (const socketInstance of socketsInRoom) {
                 const socketInstanceUserId = socketInstance.handshake.query.userId as string;
 
-                const playerHand = shuffledPlayers.find((player) => player.id === socketInstanceUserId)?.hand || [];
+                const playerHand = players[socketInstanceUserId]!.hand;
+
                 const res: StartToClient = {
-                    players: shuffledPlayers.map(convertPlayer),
+                    turnOrder: playerOrder,
                     hand: playerHand,
                     tilesRemaining,
                 };
@@ -292,6 +296,30 @@ async function main() {
 
         socket.on("disconnect", () => {
             console.log(`User ${userId} disconnected`);
+        });
+
+        socket.on("action", async (msg: ActionToServer) => {
+            const actionData = msg.actionData;
+
+            switch (actionData.type) {
+                case ActionType.PLAY:
+                    handlePlay(actionData as PlaceAction, roomId, redisClient);
+                    break;
+                case ActionType.PASS:
+                    handlePass(actionData as PassAction, roomId, redisClient);
+                    break;
+                case ActionType.SHUFFLE:
+                    handleShuffle(actionData as ShuffleAction, roomId, redisClient);
+                    break;
+                case ActionType.WRITE:
+                    handleWrite(actionData as WriteAction, roomId, redisClient);
+                    break;
+                case ActionType.SACRIFICE:
+                    handleSacrifice(actionData as SacrificeAction, roomId, redisClient);
+                    break;
+                default:
+                    console.error(`Unknown action type: ${actionData.type}`);
+            }
         });
     });
 

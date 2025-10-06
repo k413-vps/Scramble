@@ -4,13 +4,12 @@ import { CheckCircle, XCircle, Shuffle, Edit, Flame } from "lucide-react";
 
 interface ActionsEntryProps {
     action: Action;
-    index: number;
-    mana: number;
+    disabled: boolean;
+    onClick: () => void;
 }
 
-export default function ActionsEntry({ action, mana }: ActionsEntryProps) {
+export default function ActionsEntry({ action, disabled, onClick }: ActionsEntryProps) {
     const [isTooltipVisible, setTooltipVisible] = useState(false);
-    const isDisabled = mana < action.cost;
 
     // Map action types to icons
     const getIcon = (type: string) => {
@@ -41,12 +40,8 @@ export default function ActionsEntry({ action, mana }: ActionsEntryProps) {
             onMouseLeave={() => setTooltipVisible(false)}
         >
             <button
-                onClick={() => {
-                    if (!isDisabled) {
-                        console.log(`Action selected: ${action.type}`);
-                    }
-                }}
-                disabled={isDisabled}
+                onClick={onClick}
+                disabled={disabled}
                 style={{
                     display: "flex",
                     alignItems: "center",
@@ -55,9 +50,9 @@ export default function ActionsEntry({ action, mana }: ActionsEntryProps) {
                     marginBottom: "8px",
                     border: "1px solid var(--color-border)",
                     borderRadius: "8px",
-                    backgroundColor: isDisabled ? "var(--color-disabled)" : "var(--color-card)",
-                    color: isDisabled ? "var(--color-disabled-foreground)" : "var(--color-card-foreground)",
-                    cursor: isDisabled ? "not-allowed" : "pointer",
+                    backgroundColor: disabled ? "var(--color-disabled)" : "var(--color-card)",
+                    color: disabled ? "var(--color-disabled-foreground)" : "var(--color-card-foreground)",
+                    cursor: disabled ? "not-allowed" : "pointer",
                     transition: "all 0.3s ease",
                     width: "100%",
                 }}

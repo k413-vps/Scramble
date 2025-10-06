@@ -1,18 +1,15 @@
-import { Dictionary } from "../../types/game";
-import * as fs from "fs";
+import { Dictionary, DictionaryEnum } from "../../types/game";
+import sowpods from "./json/sowpods.json";
+import twl06 from "./json/twl06.json";
 
-function exportJsonFile(sourcePath: string): Dictionary {
-    try {
-        const fileContent = fs.readFileSync(sourcePath, "utf-8");
+const sowpodsDict: Set<string> = new Set(sowpods);
+const twl06Dict: Set<string> = new Set(twl06);
 
-        const jsonData: Dictionary = JSON.parse(fileContent);
-
-        return jsonData;
-    } catch (error) {
-        console.error(`Error exporting JSON file: ${error}`);
-        return [];
+export function getDictionary(dict: DictionaryEnum): Dictionary {
+    switch (dict) {
+        case DictionaryEnum.sowpods:
+            return sowpodsDict;
+        case DictionaryEnum.twl06:
+            return twl06Dict;
     }
 }
-
-// export const sowpods = exportJsonFile("./json/sowpods.json");
-export const twl06 = exportJsonFile("./json/twl06.json");
