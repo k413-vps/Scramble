@@ -24,8 +24,6 @@ export default function ActionsWindow({ socket }: ActionsWindowProps) {
     const enhancements = useGameStore((state) => state.enhancements);
     const hand = useGameStore((state) => state.hand);
 
-    const players = useGameStore((state) => state.players);
-
     const isValidPlay = validPlay(board, enhancements, dictionaryEnum);
     const isCurrentPlayer = playerId === currentPlayerId;
 

@@ -82,7 +82,7 @@ export default function Page() {
 
     useEffect(() => {
         if (roomId && !authPending && !getGameLoading) {
-            const userId = session?.user.id!;
+            const userId = session?.user.id;
 
             socket = io(process.env.NEXT_PUBLIC_WS_URL, {
                 path: process.env.NEXT_PUBLIC_WS_PATH,
@@ -122,7 +122,7 @@ export default function Page() {
     }
 
     if (gameStarted) {
-        const userId = session?.user.id!;
+        const userId = session?.user.id;
 
         const alreadyJoined = userId in players;
 

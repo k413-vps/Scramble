@@ -12,11 +12,10 @@ import {
     rectIntersection,
 } from "@dnd-kit/core";
 import { DragDataTile, DragTypes, DropDataBoard, DropDataTray, DropTypes } from "@/lib/dragTypes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TileView from "@/components/game/[id]/game/TileView";
 import { Tile } from "shared/types/tiles";
 import Leaderboard from "@/components/game/[id]/game/Leaderboard";
-import authClient from "@/lib/auth_client";
 import ActionsWindow from "@/components/game/[id]/game/ActionsWindow";
 import SpellsWindow from "@/components/game/[id]/game/SpellsWindow";
 import { Socket } from "socket.io-client";

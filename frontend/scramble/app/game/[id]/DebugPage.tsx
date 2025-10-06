@@ -32,12 +32,12 @@ export default function DebugPage() {
                         <div>
                             <Badge>Players</Badge>
                             <ul className="list-disc ml-6 mt-2">
-                                {store.players.map((player) => (
-                                    <li key={player.id}>
-                                        <span className="font-medium">{player.name}</span> ({player.id})
+                                {Object.entries(store.players).map(([id, player]) => (
+                                    <li key={id}>
+                                        <span className="font-medium">{player.name}</span> ({id})
                                     </li>
                                 ))}
-                                {store.players.length === 0 && <li className="text-muted-foreground">No players</li>}
+                                {Object.keys(store.players).length === 0 && <li className="text-muted-foreground">No players</li>}
                             </ul>
                         </div>
                         <Separator />
