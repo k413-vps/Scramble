@@ -177,6 +177,9 @@ export const useGameStore = create<
             const placedTiles = action.hand;
             const newBoard = state.board.map((r) => r.slice());
             const players = { ...state.players };
+            const newHand = [...state.hand];
+            
+
             players[state.currentPlayerId].points += action.points;
             players[state.currentPlayerId].mana += action.mana;
 
@@ -184,15 +187,27 @@ export const useGameStore = create<
                 placedTile.placed = true;
                 const { row, col } = placedTile.position!;
                 newBoard[row][col] = { type: BoardTileType.TILE, tile: placedTile };
+
+                for (let i = 0; i < newHand.length; i++) {
+                    if (newHand[i].id !== placedTile.id && newHand[i].position?.row === row && newHand[i].position?.col === col) {
+                        newHand[i].position = null;
+                    }
+
+                }
+
             }
 
-            return {
+
+            const output ={
                 board: newBoard,
                 tilesRemaining: bagSize,
                 currentPlayerId: nextPlayerId,
                 turnHistory: [...state.turnHistory, action],
                 players,
+                hand: newHand,
             };
+
+            return output;
         });
     },
 
