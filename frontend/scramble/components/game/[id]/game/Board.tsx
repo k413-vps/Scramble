@@ -1,9 +1,16 @@
 import { useGameStore } from "@/utils/game/[id]/store";
 import BoardTileView from "./BoardTileView";
+import { useEffect, useState } from "react";
 
 export default function Board() {
     const board = useGameStore((state) => state.board);
     const enhancements = useGameStore((state) => state.enhancements);
+
+    const [initialRender, setInitialRender] = useState(true);
+
+    useEffect(() => {
+        setInitialRender(false);
+    }, []);
 
     return (
         <div
@@ -22,6 +29,7 @@ export default function Board() {
                             enhancement={enhancements[rowIdx][colIdx]}
                             rowNum={rowIdx}
                             colNum={colIdx}
+                            initialRender={initialRender}
                         />
                     ))}
                 </div>
