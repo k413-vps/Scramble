@@ -101,7 +101,8 @@ export default function GamePage({ socket }: GamePageProps) {
                 <div
                     style={{
                         height: "100vh",
-                        margin: "0 auto",
+                        width: "100vw",
+                        // margin: "0 auto",
                         display: "flex",
                         justifyContent: "center",
                         overflow: "hidden",

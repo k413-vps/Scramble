@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { BoardTileType, ClientSideGame, ClientSidePlayer, DictionaryEnum } from "shared/types/game";
 import { defaultPoints } from "shared/defaults/LetterPoints";
 import { Tile } from "shared/types/tiles";
+import { PlaceAction } from "shared/types/actions";
 
 export const useGameStore = create<
     ClientSideGame & {
@@ -15,6 +16,8 @@ export const useGameStore = create<
         boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
         boardToHand: (fromRow: number, fromCol: number, index: number) => void;
         setPlayerId: (playerId: string) => void;
+        drawTiles: (newHand: Tile[], bagSize: number) => void;
+        placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => void;
 
         // getters
         getCurrentPlayer: () => ClientSidePlayer | null;
@@ -156,6 +159,38 @@ export const useGameStore = create<
         set(() => ({
             playerId,
         }));
+    },
+
+    drawTiles: (newHand: Tile[], bagSize: number) => {
+        set(() => ({
+            hand: newHand,
+            tilesRemaining: bagSize,
+        }));
+    },
+
+    placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => {
+        set((state) => {
+            const placedTiles = action.hand;
+            const newBoard = state.board.map((r) => r.slice());
+            const players = { ...state.players };
+            players[state.currentPlayerId].points += action.points;
+            players[state.currentPlayerId].mana += action.mana;
+            
+
+            for (const placedTile of placedTiles) {
+                placedTile.placed = true;
+                const {row, col} = placedTile.position!;
+                newBoard[row][col] = { type: BoardTileType.TILE, tile: placedTile };
+
+            }
+
+            return {
+                board: newBoard,
+                tilesRemaining: bagSize,
+                currentPlayerId: nextPlayerId,
+                turnHistory: [...state.turnHistory, action],
+            };
+        });
     },
 
     // getters

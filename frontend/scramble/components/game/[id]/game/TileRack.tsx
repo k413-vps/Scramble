@@ -10,12 +10,14 @@ export default function TileRack() {
 
     const rackWidth = tileSize * (tiles.length + 2);
 
-    const [rendered, setRendered] = useState(false);
+    const [rendered, setRendered] = useState<{ [key: number]: boolean }>({});
 
     // Track the tiles that exist on the first render
     useEffect(() => {
-        setRendered(true);
-    }, []);
+        for (const tile of tiles) {
+            if (tile.position !== null) setRendered((prev) => ({ ...prev, [tile.id]: true }));
+        }
+    }, [tiles]);
 
     console.log("re render whole rack");
 
@@ -29,7 +31,7 @@ export default function TileRack() {
                     key={tile.position ? `tile-${index}` : `tile-${tile.id}`}
                     layout
                     initial={
-                        !rendered
+                        !rendered[tile.id]
                             ? { scale: 0 } // Initial animation for first render tiles
                             : false // No animation for new tiles
                     }

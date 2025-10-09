@@ -46,6 +46,7 @@ export default function TileView({ tile, size = 48, index = null }: TileViewProp
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: "tile" + tile.id,
         data: dragData,
+        disabled: tile.placed, // Disable dragging if the tile is already placed
     });
     const style = transform
         ? {

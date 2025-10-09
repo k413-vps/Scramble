@@ -18,8 +18,15 @@ import { useGameStore } from "@/utils/game/[id]/store";
 
 import { io, Socket } from "socket.io-client";
 import authClient from "@/lib/auth_client";
-import { JoinToClient, JoinToServer, StartToClient } from "shared/types/SocketMessages";
+import {
+    ActionToClient,
+    DrawTilesToClient,
+    JoinToClient,
+    JoinToServer,
+    StartToClient,
+} from "shared/types/SocketMessages";
 import GamePage from "./GamePage";
+import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 
 let socket: Socket;
 
@@ -77,7 +84,54 @@ export default function Page() {
     };
 
     const handleStart = (msg: StartToClient) => {
-        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.tilesRemaining);
+        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.bagSize);
+    };
+
+    const handlePlay = (msg: ActionToClient) => {
+        const actionData = msg.actionData as PlaceAction;
+        
+        useGameStore.getState().placeAction(actionData, msg.bagSize, msg.nextPlayerId);
+    };
+
+    const handlePass = (msg: ActionToClient) => {
+        const actionData = msg.actionData as PassAction;
+    };
+
+    const handleShuffle = (msg: ActionToClient) => {
+        const actionData = msg.actionData as ShuffleAction;
+    };
+
+    const handleWrite = (msg: ActionToClient) => {
+        const actionData = msg.actionData as WriteAction;
+    };
+
+    const handleSacrifice = (msg: ActionToClient) => {
+        const actionData = msg.actionData as SacrificeAction;
+    };
+
+    const handleAction = (msg: ActionToClient) => {
+        const actionData = msg.actionData;
+        switch (actionData.type) {
+            case ActionType.PLAY:
+                handlePlay(msg);
+                break;
+            case ActionType.PASS:
+                handlePass(msg);
+                break;
+            case ActionType.SHUFFLE:
+                handleShuffle(msg);
+                break;
+            case ActionType.WRITE:
+                handleWrite(msg);
+                break;
+            case ActionType.SACRIFICE:
+                handleSacrifice(msg);
+                break;
+        }
+    };
+
+    const handleDrawTiles = (msg: DrawTilesToClient) => {
+        useGameStore.getState().drawTiles(msg.newHand, msg.bagSize);
     };
 
     useEffect(() => {
@@ -102,6 +156,8 @@ export default function Page() {
 
             socket.on("join_game", handleJoin);
             socket.on("start_game", handleStart);
+            socket.on("action", handleAction);
+            socket.on("draw_tiles", handleDrawTiles);
         } else if (!authPending) {
             setPlayerId(session!.user.id);
         }
@@ -125,10 +181,12 @@ export default function Page() {
         const userId = session?.user.id;
 
         const alreadyJoined = userId in players;
-
+        console.log("alreadyJoined", alreadyJoined);
+        console.log("players", players);
         if (!alreadyJoined) {
             return <LoadingPage />;
         }
+
 
         if (!alreadyJoined && session && session.user.name && session.user.image) {
             const socketMessage: JoinToServer = {

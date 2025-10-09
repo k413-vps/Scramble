@@ -36,6 +36,8 @@ import {
     StartToClient,
     StartToServer,
     ActionToServer,
+    ActionToClient,
+    DrawTilesToClient,
 } from "shared/types/SocketMessages";
 
 import { createRoom, getRoom, RedisSetup, checkPlayerExists, addPlayer, setOwner, startGame } from "./util/RedisHelper";
@@ -96,7 +98,7 @@ async function main() {
 
     const redisUrl = `redis://default:${REDIS_PWD}@${REDIS_IP}:${REDIS_PORT}`;
 
-    let [redisClient, redisConnected] = RedisSetup(redisUrl);
+    let { redisClient, success: redisConnected } = RedisSetup(redisUrl);
 
     // await migrate(db, { migrationsFolder: "drizzle" });
 
@@ -276,7 +278,7 @@ async function main() {
         });
 
         socket.on("start_game", async (msg: StartToServer) => {
-            const [players, playerOrder, tilesRemaining] = await startGame(redisClient, roomId);
+            const { players, playerOrder, bagSize } = await startGame(redisClient, roomId);
 
             const socketsInRoom = await io.in(uniqueId).fetchSockets();
 
@@ -288,7 +290,7 @@ async function main() {
                 const res: StartToClient = {
                     turnOrder: playerOrder,
                     hand: playerHand,
-                    tilesRemaining,
+                    bagSize,
                 };
                 socketInstance.emit("start_game", res);
             }
@@ -300,10 +302,41 @@ async function main() {
 
         socket.on("action", async (msg: ActionToServer) => {
             const actionData = msg.actionData;
-
             switch (actionData.type) {
                 case ActionType.PLAY:
-                    handlePlay(actionData as PlaceAction, roomId, redisClient);
+                    console.log("handling play action");
+                    const { newHand, bagSize, nextPlayerId } = await handlePlay(
+                        actionData as PlaceAction,
+                        roomId,
+                        redisClient
+                    );
+
+                    // can't leak info about other players' hands!!
+                    const placedTiles = (actionData as PlaceAction).hand.filter((t) => t.placed);
+
+                    const newActionData: PlaceAction = {
+                        type: ActionType.PLAY,
+                        hand: placedTiles,
+                        playerId: actionData.playerId,
+                        points: actionData.points,
+                        mana: actionData.mana,
+                    };
+
+                    const res: ActionToClient = {
+                        actionData: newActionData,
+                        bagSize,
+                        nextPlayerId,
+                    };
+
+                    io.to(uniqueId).emit("action", res);
+
+                    const newTilesRes: DrawTilesToClient = {
+                        newHand,
+                        bagSize,
+                    };
+
+                    socket.emit("draw_tiles", newTilesRes);
+
                     break;
                 case ActionType.PASS:
                     handlePass(actionData as PassAction, roomId, redisClient);
