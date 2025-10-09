@@ -12,7 +12,7 @@ export default function TileRack() {
 
     const recall = useGameStore((state) => state.recallTiles);
 
-    const rackWidth = tileSize * (tiles.length + 2);
+    const rackWidth = tileSize*1.4 * (tiles.length);
 
     const [rendered, setRendered] = useState<{ [key: number]: boolean }>({});
 

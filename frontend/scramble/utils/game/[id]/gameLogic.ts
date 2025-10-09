@@ -268,7 +268,7 @@ export function calculateScore(
                         tilePoints += 5 * countWordsForTile(tile, board);
                         break;
                     case Enchantment.POLYCHROME:
-                        wordMultiplier *= 1.5;
+                        wordMultiplier *= 2;
                         break;
                     case Enchantment.NEGATIVE:
                         // No effect on score
