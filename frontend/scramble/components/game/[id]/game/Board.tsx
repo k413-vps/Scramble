@@ -10,7 +10,7 @@ export default function Board() {
             style={{
                 display: "grid",
                 gridTemplateRows: `repeat(${board.length}, 1fr)`,
-                width: "100%",
+                width: "100vw",
             }}
         >
             {board.map((row, rowIdx) => (

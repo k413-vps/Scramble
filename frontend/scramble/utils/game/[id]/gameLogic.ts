@@ -136,15 +136,31 @@ function validPlacement(
         .sort(allSameRow ? (a, b) => a.col - b.col : (a, b) => a.row - b.row);
 
     // Check adjacency
-    for (let i = 1; i < positions.length; i++) {
-        if (allSameRow) {
-            if (positions[i].col !== positions[i - 1].col + 1) {
-                console.log("not adjacent in row");
+    if (allSameRow) {
+        const row = rows[0];
+        const minCol = Math.min(...cols);
+        const maxCol = Math.max(...cols);
+        for (let c = minCol; c <= maxCol; c++) {
+            const cell = board[row][c];
+            if (
+                !cell ||
+                cell.type !== BoardTileType.TILE
+            ) {
+                console.log("gap in horizontal placement");
                 return false;
             }
-        } else {
-            if (positions[i].row !== positions[i - 1].row + 1) {
-                console.log("not adjacent in column");
+        }
+    } else if (allSameCol) {
+        const col = cols[0];
+        const minRow = Math.min(...rows);
+        const maxRow = Math.max(...rows);
+        for (let r = minRow; r <= maxRow; r++) {
+            const cell = board[r][col];
+            if (
+                !cell ||
+                cell.type !== BoardTileType.TILE 
+            ) {
+                console.log("gap in vertical placement");
                 return false;
             }
         }

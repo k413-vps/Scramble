@@ -18,6 +18,7 @@ export const useGameStore = create<
         setPlayerId: (playerId: string) => void;
         drawTiles: (newHand: Tile[], bagSize: number) => void;
         placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => void;
+        recallTiles: () => void;
 
         // getters
         getCurrentPlayer: () => ClientSidePlayer | null;
@@ -175,13 +176,11 @@ export const useGameStore = create<
             const players = { ...state.players };
             players[state.currentPlayerId].points += action.points;
             players[state.currentPlayerId].mana += action.mana;
-            
 
             for (const placedTile of placedTiles) {
                 placedTile.placed = true;
-                const {row, col} = placedTile.position!;
+                const { row, col } = placedTile.position!;
                 newBoard[row][col] = { type: BoardTileType.TILE, tile: placedTile };
-
             }
 
             return {
@@ -190,6 +189,21 @@ export const useGameStore = create<
                 currentPlayerId: nextPlayerId,
                 turnHistory: [...state.turnHistory, action],
             };
+        });
+    },
+
+    recallTiles: () => {
+        set((state) => {
+            const newBoard = state.board.map((r) => r.slice());
+            const newHand = [...state.hand];
+            for (const tile of newHand) {
+                if (tile.position) {
+                    const { row, col } = tile.position;
+                    newBoard[row][col] = null;
+                    tile.position = null;
+                }
+            }
+            return { board: newBoard, hand: newHand };
         });
     },
 
