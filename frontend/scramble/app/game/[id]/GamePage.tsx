@@ -19,6 +19,8 @@ import Leaderboard from "@/components/game/[id]/game/Leaderboard";
 import ActionsWindow from "@/components/game/[id]/game/ActionsWindow";
 import SpellsWindow from "@/components/game/[id]/game/SpellsWindow";
 import { Socket } from "socket.io-client";
+import ScoreBanner from "@/components/game/[id]/game/ScoreBanner";
+import ActionsAndSpellsWindow from "@/components/game/[id]/game/ActionsAndSpellsWindow";
 
 type GamePageProps = {
     socket: Socket;
@@ -155,9 +157,11 @@ export default function GamePage({ socket }: GamePageProps) {
                         <TileRack />
                     </div>
                 </div>
+                {/* <ScoreBanner /> */}
                 <Leaderboard />
-                {playerId !== "" && <ActionsWindow socket={socket} />}
-                <SpellsWindow />
+                {/* {playerId !== "" && <ActionsWindow socket={socket} />} */}
+                {/* <SpellsWindow /> */}
+                <ActionsAndSpellsWindow socket={socket} />
             </div>
         </DndContext>
     );

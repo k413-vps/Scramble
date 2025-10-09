@@ -16,6 +16,12 @@ export default function TileRack() {
 
     const [rendered, setRendered] = useState<{ [key: number]: boolean }>({});
 
+    const [initialRenderDone, setInitialRenderDone] = useState(false);
+
+    useEffect(() => {
+        setInitialRenderDone(true);
+    }, []);
+
     // Track the tiles that exist on the first render
     useEffect(() => {
         for (const tile of tiles) {
@@ -29,6 +35,7 @@ export default function TileRack() {
 
     const handleRecall = () => {
         recall();
+        setRendered({});
     };
 
     return (
@@ -41,6 +48,7 @@ export default function TileRack() {
                 <AnimatePresence>
                     {anyTilePlaced && (
                         <motion.div
+                            key="recall"
                             initial={{ opacity: 0, y: -20, scale: 0.5 }}
                             animate={{ opacity: 1, y: -40, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.5 }}
@@ -49,7 +57,7 @@ export default function TileRack() {
                             style={{ top: "-1rem", right: "0.5rem" }} // Raise higher and move left
                         >
                             <Button
-                                variant="secondary"
+                                variant="secondary2"
                                 size="lg2"
                                 onClick={handleRecall}
                                 className="flex items-center gap-2 px-3 py-1.5"
@@ -75,7 +83,7 @@ export default function TileRack() {
                             ease: "easeOut",
                             scale: {
                                 ease: "easeOut",
-                                delay: index * 0.3,
+                                delay: initialRenderDone ? 0 : index * 0.3,
                                 duration: 0.5,
                             },
                         }}

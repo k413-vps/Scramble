@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 import { GetGameResponse } from "shared/types/API";
 import { ClientSideGame } from "shared/types/game";
 import LoadingPage from "@/components/LoadingPage";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import GameNotFoundPage from "./GameNotFoundPage";
 // import DebugPage from "./DebugPage";
@@ -41,6 +41,8 @@ export default function Page() {
     const players = useGameStore((state) => state.players);
 
     const setPlayerId = useGameStore((state) => state.setPlayerId);
+
+    const [socketConnected, setSocketConnected] = useState(false);
 
     async function fetchState(): Promise<ClientSideGame | null> {
         const res = (await api.get(`${process.env.NEXT_PUBLIC_BACKEND_AUTH_PATH}/game/${roomId}`))
@@ -89,7 +91,7 @@ export default function Page() {
 
     const handlePlay = (msg: ActionToClient) => {
         const actionData = msg.actionData as PlaceAction;
-        
+
         useGameStore.getState().placeAction(actionData, msg.bagSize, msg.nextPlayerId);
     };
 
@@ -154,6 +156,8 @@ export default function Page() {
                 socket.emit("join_game", socketMessage);
             }
 
+            socket.on("connect", () => setSocketConnected(true));
+
             socket.on("join_game", handleJoin);
             socket.on("start_game", handleStart);
             socket.on("action", handleAction);
@@ -169,7 +173,25 @@ export default function Page() {
         };
     }, [roomId, authPending, data]);
 
-    if (getGameLoading || authPending || !session?.user?.id || !socket) {
+    console.log(
+        "loading check",
+        "getGameLoading",
+        getGameLoading,
+        "authPending",
+        authPending,
+        "!session?.user?.id",
+        !session?.user?.id,
+        "!socket",
+        !socket,
+        "socket",
+        socket,
+        "socket?.active",
+        socket?.active,
+        "!socketConnected",
+        !socketConnected
+    );
+
+    if (getGameLoading || authPending || !session?.user?.id || !socketConnected) {
         return <LoadingPage />;
     }
 
@@ -186,7 +208,6 @@ export default function Page() {
         if (!alreadyJoined) {
             return <LoadingPage />;
         }
-
 
         if (!alreadyJoined && session && session.user.name && session.user.image) {
             const socketMessage: JoinToServer = {

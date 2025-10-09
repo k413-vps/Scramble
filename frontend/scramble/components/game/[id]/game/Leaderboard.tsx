@@ -13,7 +13,7 @@ export default function Leaderboard() {
     const currentPlayer = useGameStore((state) => state.currentPlayerId);
 
     const width = 300;
-    const height = 400;
+    const height = 410;
 
     console.log("turnOrder is", turnOrder);
 

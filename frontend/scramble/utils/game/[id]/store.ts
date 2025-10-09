@@ -3,6 +3,8 @@ import { BoardTileType, ClientSideGame, ClientSidePlayer, DictionaryEnum } from 
 import { defaultPoints } from "shared/defaults/LetterPoints";
 import { Tile } from "shared/types/tiles";
 import { PlaceAction } from "shared/types/actions";
+import { validPlay } from "./gameLogic";
+import { shallow } from "zustand/shallow";
 
 export const useGameStore = create<
     ClientSideGame & {
@@ -23,6 +25,7 @@ export const useGameStore = create<
         // getters
         getCurrentPlayer: () => ClientSidePlayer | null;
         getPlayer: () => ClientSidePlayer | null;
+        getValidPlay: () => boolean;
 
         numRows: number;
         numCols: number;
@@ -188,6 +191,7 @@ export const useGameStore = create<
                 tilesRemaining: bagSize,
                 currentPlayerId: nextPlayerId,
                 turnHistory: [...state.turnHistory, action],
+                players,
             };
         });
     },
@@ -210,6 +214,11 @@ export const useGameStore = create<
     // getters
     getPlayer: () => get().players[get().playerId],
     getCurrentPlayer: () => get().players[get().currentPlayerId],
+    getValidPlay: () => {
+        const { board, enhancements, dictionary } = get();
+        return validPlay(board, enhancements, dictionary);
+    },
+
 
     numRows: 15,
     numCols: 15,

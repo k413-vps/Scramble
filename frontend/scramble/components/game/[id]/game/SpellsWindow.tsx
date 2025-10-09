@@ -1,17 +1,13 @@
-import { useGameStore } from "@/utils/game/[id]/store";
 import React, { useState } from "react";
 import { Rnd } from "react-rnd";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import SpellsEntry from "./SpellsEntry";
-import { spellList } from "shared/types/spells";
+
+import SpellsWindowContent from "./SpellsWindowContent";
 
 export default function SpellsWindow() {
     const [isMinimized, setIsMinimized] = useState(false);
     const [position, setPosition] = useState({ x: window.innerWidth - 350, y: 500 });
 
-    const player = useGameStore((state) => state.getPlayer());
-
-    const mana = player === null ? -1 : player.mana;
 
     const width = 300;
     const height = 400;
@@ -62,21 +58,7 @@ export default function SpellsWindow() {
                 </button>
             </div>
             {!isMinimized && (
-                <div
-                    style={{
-                        padding: "16px",
-                        overflowY: "auto",
-                        height: "calc(100% - 40px)",
-                        backgroundColor: "#000000",
-                        color: "var(--color-card-foreground)",
-                    }}
-                >
-                    <div>
-                        {spellList.map((spell, index) => (
-                            <SpellsEntry key={spell.type} spell={spell} index={index} mana={mana} />
-                        ))}
-                    </div>
-                </div>
+                <SpellsWindowContent />
             )}
         </Rnd>
     );

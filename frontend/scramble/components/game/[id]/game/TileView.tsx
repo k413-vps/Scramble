@@ -8,7 +8,6 @@ interface TileViewProps {
     index?: number | null;
 }
 
-// ...existing code...
 function getEnchantmentClass(enchantment: Enchantment) {
     switch (enchantment) {
         case Enchantment.FOIL:
