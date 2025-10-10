@@ -29,7 +29,7 @@ export interface StartToClient {
     // players: ClientSidePlayer[];
     turnOrder: string[];
     hand: Tile[];
-    tilesRemaining: number;
+    bagSize: number;
 }
 
 export interface ActionToServer {
@@ -38,4 +38,11 @@ export interface ActionToServer {
 
 export interface ActionToClient {
     actionData: ActionData;
+    bagSize: number;
+    nextPlayerId: string;
+}
+
+export interface DrawTilesToClient {
+    newHand: Tile[];
+    bagSize: number;
 }

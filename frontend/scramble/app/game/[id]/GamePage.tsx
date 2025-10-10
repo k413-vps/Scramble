@@ -16,9 +16,8 @@ import { useState } from "react";
 import TileView from "@/components/game/[id]/game/TileView";
 import { Tile } from "shared/types/tiles";
 import Leaderboard from "@/components/game/[id]/game/Leaderboard";
-import ActionsWindow from "@/components/game/[id]/game/ActionsWindow";
-import SpellsWindow from "@/components/game/[id]/game/SpellsWindow";
 import { Socket } from "socket.io-client";
+import ActionsAndSpellsWindow from "@/components/game/[id]/game/ActionsAndSpellsWindow";
 
 type GamePageProps = {
     socket: Socket;
@@ -29,7 +28,6 @@ export default function GamePage({ socket }: GamePageProps) {
     const numRows = useGameStore((state) => state.numRows);
     const numCols = useGameStore((state) => state.numCols);
 
-    const playerId = useGameStore((state) => state.playerId);
     const handToHand = useGameStore((state) => state.handToHand);
     const handToBoard = useGameStore((state) => state.handToBoard);
     const boardToBoard = useGameStore((state) => state.boardToBoard);
@@ -101,7 +99,8 @@ export default function GamePage({ socket }: GamePageProps) {
                 <div
                     style={{
                         height: "100vh",
-                        margin: "0 auto",
+                        width: "100vw",
+                        // margin: "0 auto",
                         display: "flex",
                         justifyContent: "center",
                         overflow: "hidden",
@@ -154,9 +153,11 @@ export default function GamePage({ socket }: GamePageProps) {
                         <TileRack />
                     </div>
                 </div>
+                {/* <ScoreBanner /> */}
                 <Leaderboard />
-                {playerId !== "" && <ActionsWindow socket={socket} />}
-                <SpellsWindow />
+                {/* {playerId !== "" && <ActionsWindow socket={socket} />} */}
+                {/* <SpellsWindow /> */}
+                <ActionsAndSpellsWindow socket={socket} />
             </div>
         </DndContext>
     );

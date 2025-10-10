@@ -1,5 +1,7 @@
 import React from "react";
 import { ClientSidePlayer } from "shared/types/game";
+import Image from "next/image";
+
 
 interface LeaderboardPlayerProps {
     player: ClientSidePlayer;
@@ -23,15 +25,16 @@ export default function LeaderboardPlayer({ player, index, currentPlayer }: Lead
                 transition: "all 0.3s ease", // Smooth transition for the effects
             }}
         >
-            <img
+             <Image
                 src={player.profilePicture}
                 alt={`${player.name}'s profile`}
+                width={50}
+                height={50}
                 style={{
-                    width: "50px",
-                    height: "50px",
                     borderRadius: "50%",
                     marginRight: "16px",
                     border: "2px solid var(--color-border)",
+                    objectFit: "cover",
                 }}
             />
             <div style={{ flex: 1, minWidth: 0 }}>

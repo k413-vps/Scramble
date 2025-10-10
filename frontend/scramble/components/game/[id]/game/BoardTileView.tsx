@@ -5,12 +5,15 @@ import { memo } from "react";
 import { Sparkle, Star } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { DropDataBoard, DropTypes } from "@/lib/dragTypes";
+import { motion } from "framer-motion";
 
 type BoardTileProps = {
     cell: BoardTile | null;
     enhancement: Enhancement;
     rowNum: number;
     colNum: number;
+
+    initialRender: boolean;
 };
 
 function getEnhancementClass(enhancement: Enhancement) {
@@ -99,7 +102,7 @@ function getEnchancementLetter(enhancement: Enhancement, size: number) {
     );
 }
 
-const BoardCell = ({ cell, enhancement, rowNum, colNum }: BoardTileProps) => {
+const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTileProps) => {
     const size = 64;
 
     const dropData: DropDataBoard = {
@@ -136,16 +139,27 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum }: BoardTileProps) => {
         >
             {getEnchancementLetter(enhancement, size)}
             {cell && cell.type === "tile" && (
-                <div
+                <motion.div
+                    initial={
+                        (cell.tile as Tile).placed && !initialRender
+                            ? { scale: 0, opacity: 0 }
+                            : { scale: 1, opacity: 1 }
+                    }
+                    animate={{ scale: 1, opacity: 1 }}
                     style={{
                         position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                     }}
+                    transition={{ duration: 0.5, ease: "easeIn" }}
                 >
                     <TileView tile={cell.tile as Tile} size={60} />
-                </div>
+                </motion.div>
             )}
         </div>
     );

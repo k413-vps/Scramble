@@ -21,6 +21,8 @@ function getRandomEnchantment(rng: seedrandom.PRNG, rates: EnchantmentRate): Enc
     return Enchantment.BASE;
 }
 
+
+// modifies bag
 export async function drawTiles(
     bag: string[],
     hand: Tile[],

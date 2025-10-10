@@ -1,5 +1,6 @@
 import { DragDataTile, DragTypes } from "@/lib/dragTypes";
 import { useDraggable } from "@dnd-kit/core";
+import { useEffect, useState } from "react";
 import { Tile, Enchantment } from "shared/types/tiles";
 
 interface TileViewProps {
@@ -8,7 +9,6 @@ interface TileViewProps {
     index?: number | null;
 }
 
-// ...existing code...
 function getEnchantmentClass(enchantment: Enchantment) {
     switch (enchantment) {
         case Enchantment.FOIL:
@@ -23,9 +23,14 @@ function getEnchantmentClass(enchantment: Enchantment) {
             return "tile-default";
     }
 }
-const animationDelay = `${Math.random() * -12}s`;
 
 export default function TileView({ tile, size = 48, index = null }: TileViewProps) {
+    const [animationDelay, setAnimationDelay] = useState("0s");
+
+    useEffect(() => {
+        setAnimationDelay(`${Math.random() * -12}s`);
+    }, []);
+
     const dragData: DragDataTile = {
         dragType: DragTypes.TILE,
         dragIndex: index,
@@ -43,16 +48,11 @@ export default function TileView({ tile, size = 48, index = null }: TileViewProp
             ? "Negative " + tile.letter
             : "Standard " + tile.letter;
 
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    const { attributes, listeners, setNodeRef } = useDraggable({
         id: "tile" + tile.id,
         data: dragData,
+        disabled: tile.placed, // Disable dragging if the tile is already placed
     });
-    const style = transform
-        ? {
-            //   transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-              zIndex: 1000,
-          }
-        : undefined;
 
     return (
         <div
@@ -62,9 +62,8 @@ export default function TileView({ tile, size = 48, index = null }: TileViewProp
                 height: size,
                 userSelect: "none", // Prevent text selection
                 borderRadius: size * 0.18,
-                animationDelay,
+                animationDelay: tile.enchantment === Enchantment.POLYCHROME ? animationDelay : undefined,
                 border: `${size * 0.04}px solid var(--foreground)`,
-                ...style,
             }}
             className={`${getEnchantmentClass(tile.enchantment)}`}
             title={tooltip} // Tooltip on hover

@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 import { GetGameResponse } from "shared/types/API";
 import { ClientSideGame } from "shared/types/game";
 import LoadingPage from "@/components/LoadingPage";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import GameNotFoundPage from "./GameNotFoundPage";
 // import DebugPage from "./DebugPage";
@@ -18,8 +18,15 @@ import { useGameStore } from "@/utils/game/[id]/store";
 
 import { io, Socket } from "socket.io-client";
 import authClient from "@/lib/auth_client";
-import { JoinToClient, JoinToServer, StartToClient } from "shared/types/SocketMessages";
+import {
+    ActionToClient,
+    DrawTilesToClient,
+    JoinToClient,
+    JoinToServer,
+    StartToClient,
+} from "shared/types/SocketMessages";
 import GamePage from "./GamePage";
+import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 
 let socket: Socket;
 
@@ -34,6 +41,8 @@ export default function Page() {
     const players = useGameStore((state) => state.players);
 
     const setPlayerId = useGameStore((state) => state.setPlayerId);
+
+    const [socketConnected, setSocketConnected] = useState(false);
 
     async function fetchState(): Promise<ClientSideGame | null> {
         const res = (await api.get(`${process.env.NEXT_PUBLIC_BACKEND_AUTH_PATH}/game/${roomId}`))
@@ -77,7 +86,58 @@ export default function Page() {
     };
 
     const handleStart = (msg: StartToClient) => {
-        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.tilesRemaining);
+        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.bagSize);
+    };
+
+    const handlePlay = (msg: ActionToClient) => {
+        const actionData = msg.actionData as PlaceAction;
+
+        useGameStore.getState().placeAction(actionData, msg.bagSize, msg.nextPlayerId);
+    };
+
+    const handlePass = (msg: ActionToClient) => {
+        const actionData = msg.actionData as PassAction;
+        useGameStore.getState().passAction(actionData, msg.nextPlayerId);
+    };
+
+    const handleShuffle = (msg: ActionToClient) => {
+        const actionData = msg.actionData as ShuffleAction;
+        useGameStore.getState().shuffleAction(actionData, msg.nextPlayerId);
+    };
+
+    const handleWrite = (msg: ActionToClient) => {
+        const actionData = msg.actionData as WriteAction;
+        useGameStore.getState().writeAction(actionData, msg.nextPlayerId);
+    };
+
+    const handleSacrifice = (msg: ActionToClient) => {
+        const actionData = msg.actionData as SacrificeAction;
+        useGameStore.getState().sacrificeAction(actionData, msg.nextPlayerId);
+    };
+
+    const handleAction = (msg: ActionToClient) => {
+        const actionData = msg.actionData;
+        switch (actionData.type) {
+            case ActionType.PLAY:
+                handlePlay(msg);
+                break;
+            case ActionType.PASS:
+                handlePass(msg);
+                break;
+            case ActionType.SHUFFLE:
+                handleShuffle(msg);
+                break;
+            case ActionType.WRITE:
+                handleWrite(msg);
+                break;
+            case ActionType.SACRIFICE:
+                handleSacrifice(msg);
+                break;
+        }
+    };
+
+    const handleDrawTiles = (msg: DrawTilesToClient) => {
+        useGameStore.getState().drawTiles(msg.newHand, msg.bagSize);
     };
 
     useEffect(() => {
@@ -100,8 +160,12 @@ export default function Page() {
                 socket.emit("join_game", socketMessage);
             }
 
+            socket.on("connect", () => setSocketConnected(true));
+
             socket.on("join_game", handleJoin);
             socket.on("start_game", handleStart);
+            socket.on("action", handleAction);
+            socket.on("draw_tiles", handleDrawTiles);
         } else if (!authPending) {
             setPlayerId(session!.user.id);
         }
@@ -113,7 +177,25 @@ export default function Page() {
         };
     }, [roomId, authPending, data]);
 
-    if (getGameLoading || authPending || !session?.user?.id || !socket) {
+    console.log(
+        "loading check",
+        "getGameLoading",
+        getGameLoading,
+        "authPending",
+        authPending,
+        "!session?.user?.id",
+        !session?.user?.id,
+        "!socket",
+        !socket,
+        "socket",
+        socket,
+        "socket?.active",
+        socket?.active,
+        "!socketConnected",
+        !socketConnected
+    );
+
+    if (getGameLoading || authPending || !session?.user?.id || !socketConnected) {
         return <LoadingPage />;
     }
 
@@ -125,7 +207,8 @@ export default function Page() {
         const userId = session?.user.id;
 
         const alreadyJoined = userId in players;
-
+        console.log("alreadyJoined", alreadyJoined);
+        console.log("players", players);
         if (!alreadyJoined) {
             return <LoadingPage />;
         }

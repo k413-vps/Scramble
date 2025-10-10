@@ -1,6 +1,7 @@
 import { BoardTile, BoardTileType, Dictionary, DictionaryEnum, Enhancement } from "shared/types/game";
-import { Tile } from "shared/types/tiles";
+import { Enchantment, Tile } from "shared/types/tiles";
 import { getDictionary } from "shared/defaults/wordlists/dictionaries";
+import { Score } from "./HelperTypes";
 
 // get all the tiles that are not placed yet
 function plannedTiles(board: Array<Array<BoardTile | null>>): Tile[] {
@@ -136,15 +137,25 @@ function validPlacement(
         .sort(allSameRow ? (a, b) => a.col - b.col : (a, b) => a.row - b.row);
 
     // Check adjacency
-    for (let i = 1; i < positions.length; i++) {
-        if (allSameRow) {
-            if (positions[i].col !== positions[i - 1].col + 1) {
-                console.log("not adjacent in row");
+    if (allSameRow) {
+        const row = rows[0];
+        const minCol = Math.min(...cols);
+        const maxCol = Math.max(...cols);
+        for (let c = minCol; c <= maxCol; c++) {
+            const cell = board[row][c];
+            if (!cell || cell.type !== BoardTileType.TILE) {
+                console.log("gap in horizontal placement");
                 return false;
             }
-        } else {
-            if (positions[i].row !== positions[i - 1].row + 1) {
-                console.log("not adjacent in column");
+        }
+    } else if (allSameCol) {
+        const col = cols[0];
+        const minRow = Math.min(...rows);
+        const maxRow = Math.max(...rows);
+        for (let r = minRow; r <= maxRow; r++) {
+            const cell = board[r][col];
+            if (!cell || cell.type !== BoardTileType.TILE) {
+                console.log("gap in vertical placement");
                 return false;
             }
         }
@@ -200,4 +211,121 @@ export function validPlay(
     }
 
     return true;
+}
+
+function countWordsForTile(tile: Tile, board: Array<Array<BoardTile | null>>): number {
+    if (!tile.position) return 0;
+    const { row, col } = tile.position;
+
+    let count = 0;
+
+    // Check horizontal word
+    const horizontalWord = findWord(row, col, 0, 1, board);
+    if (horizontalWord.length > 1) count++;
+
+    // Check vertical word
+    const verticalWord = findWord(row, col, 1, 0, board);
+    if (verticalWord.length > 1) count++;
+
+    return count;
+}
+
+export function calculateScore(
+    board: Array<Array<BoardTile | null>>,
+    enhancements: Enhancement[][],
+    dictionaryEnum: DictionaryEnum
+): Score {
+    if (!validPlay(board, enhancements, dictionaryEnum)) {
+        return { points: -1, mana: -1 };
+    }
+
+    // Get all planned tiles (not finalized)
+    const planned = plannedTiles(board);
+
+    // Get all new words formed by the planned tiles
+    const words = newWords(board, planned);
+
+    let totalPoints = 0;
+    let totalMana = 0;
+    let idToPoints: { [id: string]: number } = {};
+
+    for (const word of words) {
+        let wordMultiplier = 1;
+        let tempIdToPoints: { [id: string]: number } = {};
+
+        for (const tile of word) {
+            const { row, col } = tile.position!;
+            let letterMultiplier = 1;
+            let tilePoints = tile.points;
+
+            // Apply tile enchantments if new tile
+            if (!tile.placed) {
+                switch (tile.enchantment) {
+                    case Enchantment.FOIL:
+                        tilePoints += 7;
+                        break;
+                    case Enchantment.HOLOGRAPHIC:
+                        tilePoints += 5 * countWordsForTile(tile, board);
+                        break;
+                    case Enchantment.POLYCHROME:
+                        wordMultiplier *= 2;
+                        break;
+                    case Enchantment.NEGATIVE:
+                        // No effect on score
+                        break;
+                    case Enchantment.BASE:
+                    default:
+                        break;
+                }
+            }
+            // Apply board enhancements if new tile
+            if (!tile.placed) {
+                switch (enhancements[row][col]) {
+                    case Enhancement.DOUBLE_LETTER:
+                        letterMultiplier *= 2;
+                        break;
+                    case Enhancement.TRIPLE_LETTER:
+                        letterMultiplier *= 3;
+                        break;
+                    case Enhancement.DOUBLE_WORD:
+                        wordMultiplier *= 2;
+                        break;
+                    case Enhancement.TRIPLE_WORD:
+                        wordMultiplier *= 3;
+                        break;
+                    case Enhancement.MANA:
+                        totalMana += 1;
+                        break;
+                    case Enhancement.DOUBLE_START:
+                        wordMultiplier *= 2;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            tilePoints *= letterMultiplier;
+            tempIdToPoints[tile.id] = tilePoints;
+        }
+
+        let entries = Object.entries(tempIdToPoints);
+        for (let i = 0; i < entries.length; i++) {
+            let [id, points] = entries[i];
+
+            points = Math.ceil(points * wordMultiplier);
+            idToPoints[id] = Math.max(idToPoints[id] || 0, points);
+        }
+    }
+
+    for (const word of words) {
+        const wordStr = word.map((t) => t.letter).join("");
+        const wordScore = word.reduce((sum, tile) => sum + idToPoints[tile.id], 0);
+        console.log("word score", word, wordScore);
+        totalPoints += wordScore;
+    }
+
+    return {
+        points: totalPoints,
+        mana: totalMana,
+    };
 }
