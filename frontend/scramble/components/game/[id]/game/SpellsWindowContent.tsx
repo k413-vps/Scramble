@@ -1,5 +1,4 @@
 import { useGameStore } from "@/utils/game/[id]/store";
-import React, { useState } from "react";
 import SpellsEntry from "./SpellsEntry";
 import { spells, SpellType } from "shared/types/spells";
 

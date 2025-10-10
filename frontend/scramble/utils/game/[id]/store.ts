@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { BoardTileType, ClientSideGame, ClientSidePlayer, DictionaryEnum } from "shared/types/game";
 import { defaultPoints } from "shared/defaults/LetterPoints";
 import { Tile } from "shared/types/tiles";
-import { PlaceAction } from "shared/types/actions";
+import { PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 import { validPlay } from "./gameLogic";
 import { shallow } from "zustand/shallow";
 
@@ -19,7 +19,13 @@ export const useGameStore = create<
         boardToHand: (fromRow: number, fromCol: number, index: number) => void;
         setPlayerId: (playerId: string) => void;
         drawTiles: (newHand: Tile[], bagSize: number) => void;
+
         placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => void;
+        passAction: (action: PassAction, nextPlayerId: string) => void;
+        shuffleAction: (action: ShuffleAction, nextPlayerId: string) => void;
+        writeAction: (action: WriteAction, nextPlayerId: string) => void;
+        sacrificeAction: (action: SacrificeAction, nextPlayerId: string) => void;
+
         recallTiles: () => void;
 
         // getters
@@ -178,7 +184,6 @@ export const useGameStore = create<
             const newBoard = state.board.map((r) => r.slice());
             const players = { ...state.players };
             const newHand = [...state.hand];
-            
 
             players[state.currentPlayerId].points += action.points;
             players[state.currentPlayerId].mana += action.mana;
@@ -189,16 +194,17 @@ export const useGameStore = create<
                 newBoard[row][col] = { type: BoardTileType.TILE, tile: placedTile };
 
                 for (let i = 0; i < newHand.length; i++) {
-                    if (newHand[i].id !== placedTile.id && newHand[i].position?.row === row && newHand[i].position?.col === col) {
+                    if (
+                        newHand[i].id !== placedTile.id &&
+                        newHand[i].position?.row === row &&
+                        newHand[i].position?.col === col
+                    ) {
                         newHand[i].position = null;
                     }
-
                 }
-
             }
 
-
-            const output ={
+            const output = {
                 board: newBoard,
                 tilesRemaining: bagSize,
                 currentPlayerId: nextPlayerId,
@@ -209,6 +215,19 @@ export const useGameStore = create<
 
             return output;
         });
+    },
+
+    passAction: (action: PassAction, nextPlayerId: string) => {
+        set((state) => ({ currentPlayerId: nextPlayerId }));
+    },
+    shuffleAction: (action: ShuffleAction, nextPlayerId: string) => {
+        set((state) => ({ currentPlayerId: nextPlayerId }));
+    },
+    writeAction: (action: WriteAction, nextPlayerId: string) => {
+        set((state) => ({ currentPlayerId: nextPlayerId }));
+    },
+    sacrificeAction: (action: SacrificeAction, nextPlayerId: string) => {
+        set((state) => ({ currentPlayerId: nextPlayerId }));
     },
 
     recallTiles: () => {
@@ -233,7 +252,6 @@ export const useGameStore = create<
         const { board, enhancements, dictionary } = get();
         return validPlay(board, enhancements, dictionary);
     },
-
 
     numRows: 15,
     numCols: 15,

@@ -1,10 +1,15 @@
 "use client";
 
+import { calculateScore } from "@/utils/game/[id]/gameLogic";
 import { useGameStore } from "@/utils/game/[id]/store";
 import { CSSProperties } from "react";
 
 export default function ScoreBanner() {
-    const { points, mana } = useGameStore((state) => state.getPlayScore());
+
+    const board = useGameStore((state) => state.board);
+    const enhancements = useGameStore((state) => state.enhancements);
+    const dictionary = useGameStore((state) => state.dictionary);
+    const { points, mana } = calculateScore(board, enhancements, dictionary);
 
     const containerStyle: CSSProperties = {
         position: "fixed",

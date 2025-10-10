@@ -1,14 +1,8 @@
-import { useGameStore } from "@/utils/game/[id]/store";
 import React, { useState } from "react";
 import { Rnd } from "react-rnd";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import ActionsEntry from "./ActionsEntry";
-import { actions, ActionType, PlaceAction } from "shared/types/actions";
-import { calculateScore } from "@/utils/game/[id]/gameLogic";
 import { Socket } from "socket.io-client";
-import { ActionToServer } from "shared/types/SocketMessages";
-import ScorePill from "./ScorePill";
-import { handlePlay, handlePass, handleShuffle, handleWrite, handleSacrifice } from "@/utils/game/[id]/HandleActions";
+
 import ActionWindowContent from "./ActionWindowContent";
 interface ActionsWindowProps {
     socket: Socket;

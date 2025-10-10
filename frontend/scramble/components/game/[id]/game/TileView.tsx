@@ -48,13 +48,12 @@ export default function TileView({ tile, size = 48, index = null }: TileViewProp
             ? "Negative " + tile.letter
             : "Standard " + tile.letter;
 
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    const { attributes, listeners, setNodeRef } = useDraggable({
         id: "tile" + tile.id,
         data: dragData,
         disabled: tile.placed, // Disable dragging if the tile is already placed
     });
 
-    console.log("delay", animationDelay, tile.id);
     return (
         <div
             style={{

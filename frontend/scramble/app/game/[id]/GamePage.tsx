@@ -16,10 +16,7 @@ import { useState } from "react";
 import TileView from "@/components/game/[id]/game/TileView";
 import { Tile } from "shared/types/tiles";
 import Leaderboard from "@/components/game/[id]/game/Leaderboard";
-import ActionsWindow from "@/components/game/[id]/game/ActionsWindow";
-import SpellsWindow from "@/components/game/[id]/game/SpellsWindow";
 import { Socket } from "socket.io-client";
-import ScoreBanner from "@/components/game/[id]/game/ScoreBanner";
 import ActionsAndSpellsWindow from "@/components/game/[id]/game/ActionsAndSpellsWindow";
 
 type GamePageProps = {
@@ -31,7 +28,6 @@ export default function GamePage({ socket }: GamePageProps) {
     const numRows = useGameStore((state) => state.numRows);
     const numCols = useGameStore((state) => state.numCols);
 
-    const playerId = useGameStore((state) => state.playerId);
     const handToHand = useGameStore((state) => state.handToHand);
     const handToBoard = useGameStore((state) => state.handToBoard);
     const boardToBoard = useGameStore((state) => state.boardToBoard);

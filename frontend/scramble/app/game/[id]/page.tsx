@@ -97,18 +97,22 @@ export default function Page() {
 
     const handlePass = (msg: ActionToClient) => {
         const actionData = msg.actionData as PassAction;
+        useGameStore.getState().passAction(actionData, msg.nextPlayerId);
     };
 
     const handleShuffle = (msg: ActionToClient) => {
         const actionData = msg.actionData as ShuffleAction;
+        useGameStore.getState().shuffleAction(actionData, msg.nextPlayerId);
     };
 
     const handleWrite = (msg: ActionToClient) => {
         const actionData = msg.actionData as WriteAction;
+        useGameStore.getState().writeAction(actionData, msg.nextPlayerId);
     };
 
     const handleSacrifice = (msg: ActionToClient) => {
         const actionData = msg.actionData as SacrificeAction;
+        useGameStore.getState().sacrificeAction(actionData, msg.nextPlayerId);
     };
 
     const handleAction = (msg: ActionToClient) => {
