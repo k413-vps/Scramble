@@ -108,10 +108,10 @@ export enum Enhancement {
     TRIPLE_LETTER = "3L",
     DOUBLE_WORD = "2W",
     TRIPLE_WORD = "3W",
-    NONE = "",
-    START = "*",
+    NONE = "  ",
+    START = "**",
     DOUBLE_START = "2*",
-    MANA = "M",
+    MANA = "MM",
 }
 
 export type Dictionary = Set<string>;
