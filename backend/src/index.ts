@@ -339,16 +339,45 @@ async function main() {
 
                     break;
                 case ActionType.PASS:
-                    handlePass(actionData as PassAction, roomId, redisClient);
+                    const nextPlayerIdPass = await handlePass(actionData as PassAction, roomId, redisClient);
+                    const resPass: ActionToClient = {
+                        actionData: actionData,
+                        nextPlayerId: nextPlayerIdPass,
+                    };
+
+                    io.to(uniqueId).emit("action", resPass);
+
                     break;
                 case ActionType.SHUFFLE:
-                    handleShuffle(actionData as ShuffleAction, roomId, redisClient);
+                    const { newHand: newHandShuffle, bagSize: bagSizeShuffle, nextPlayerId: nextPlayerIdShuffle } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
+                    
+                    const resShuffle: ActionToClient = {
+                        actionData: actionData,
+                        bagSize: bagSizeShuffle,
+                        nextPlayerId: nextPlayerIdShuffle,
+                    };
+
+                    io.to(uniqueId).emit("action", resShuffle);
+
+                    const newTilesResShuffle: DrawTilesToClient = {
+                        newHand: newHandShuffle,
+                        bagSize: bagSizeShuffle,
+                    };
+
+                    socket.emit("draw_tiles", newTilesResShuffle);
+
                     break;
                 case ActionType.WRITE:
                     handleWrite(actionData as WriteAction, roomId, redisClient);
                     break;
                 case ActionType.SACRIFICE:
-                    handleSacrifice(actionData as SacrificeAction, roomId, redisClient);
+                    const nextPlayerIdSacrifice = await handleSacrifice(actionData as SacrificeAction, roomId, redisClient);
+                    const resSacrifice: ActionToClient = {
+                        actionData: actionData,
+                        nextPlayerId: nextPlayerIdSacrifice,
+                    };
+                    io.to(uniqueId).emit("action", resSacrifice);
+
                     break;
                 default:
                     console.error(`Unknown action type: ${actionData.type}`);

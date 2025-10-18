@@ -3,7 +3,7 @@ import ActionsEntry from "./ActionsEntry";
 import ScorePill from "./ScorePill";
 import { useGameStore } from "@/utils/game/[id]/store";
 import { calculateScore } from "@/utils/game/[id]/gameLogic";
-import { handlePlay, handlePass, handleShuffle, handleWrite, handleSacrifice } from "@/utils/game/[id]/HandleActions";
+import { handlePlay, handlePass, handleShuffle, handleSacrifice } from "@/utils/game/[id]/HandleActions";
 import { Socket } from "socket.io-client";
 
 type ActionWindowContentProps = {
@@ -20,7 +20,11 @@ export default function ActionWindowContent({ socket }: ActionWindowContentProps
     const isValidPlay = useGameStore((state) => state.getValidPlay());
     const isCurrentPlayer = playerId === currentPlayerId;
 
-    const mana = player!.mana;
+    console.log("please help why is it crashing")
+    console.log("player", player)
+    console.log("playerId", playerId)
+    console.log("currentPlayerId", currentPlayerId)
+    // const mana = player!.mana;
 
     const board = useGameStore((state) => state.board);
     const enhancements = useGameStore((state) => state.enhancements);
@@ -49,20 +53,20 @@ export default function ActionWindowContent({ socket }: ActionWindowContentProps
                 >
                     {isValidPlay && <ScorePill points={points} mana={manaGain} />}
                 </ActionsEntry>
-                <ActionsEntry action={actions[ActionType.PASS]} onClick={handlePass} disabled={!isCurrentPlayer} />
+                <ActionsEntry action={actions[ActionType.PASS]} onClick={() => handlePass(socket, playerId)} disabled={!isCurrentPlayer} />
                 <ActionsEntry
                     action={actions[ActionType.SHUFFLE]}
-                    onClick={handleShuffle}
+                    onClick={() => handleShuffle(socket, hand, playerId)}
                     disabled={!isCurrentPlayer}
                 />
-                <ActionsEntry
+                {/* <ActionsEntry
                     action={actions[ActionType.WRITE]}
                     onClick={handleWrite}
                     disabled={mana < actions[ActionType.WRITE].cost || !isCurrentPlayer}
-                />
+                /> */}
                 <ActionsEntry
                     action={actions[ActionType.SACRIFICE]}
-                    onClick={handleSacrifice}
+                    onClick={() => handleSacrifice(socket, playerId)}
                     disabled={!isCurrentPlayer}
                 />
             </div>

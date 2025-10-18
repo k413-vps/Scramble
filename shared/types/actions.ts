@@ -62,6 +62,7 @@ export interface PassAction extends ActionData {
 
 export interface ShuffleAction extends ActionData {
     type: ActionType.SHUFFLE;
+    hand: Tile[];
 }
 
 export interface WriteAction extends ActionData {
@@ -70,4 +71,6 @@ export interface WriteAction extends ActionData {
 
 export interface SacrificeAction extends ActionData {
     type: ActionType.SACRIFICE;
+    mana: 7;
+    points: -20;
 }
