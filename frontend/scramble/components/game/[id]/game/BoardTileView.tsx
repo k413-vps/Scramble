@@ -1,4 +1,4 @@
-import { BoardTile, Enhancement } from "shared/types/game";
+import { BoardTile, BoardTileType, Enhancement } from "shared/types/game";
 import TileView from "./TileView";
 import { Tile } from "shared/types/tiles";
 import { memo } from "react";
@@ -105,6 +105,11 @@ function getEnchancementLetter(enhancement: Enhancement, size: number) {
 const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTileProps) => {
     const size = 64;
 
+    if (cell) {
+        console.log("cell type", cell.type);
+        console.log(BoardTileType.TILE, "enum type");
+    }
+
     const dropData: DropDataBoard = {
         dropType: DropTypes.BOARD,
         rowNum,
@@ -138,7 +143,7 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTi
             className={`${getEnhancementClass(enhancement)}`}
         >
             {getEnchancementLetter(enhancement, size)}
-            {cell && cell.type === "tile" && (
+            {cell && cell.type === BoardTileType.TILE && (
                 <motion.div
                     initial={
                         (cell.tile as Tile).placed && !initialRender

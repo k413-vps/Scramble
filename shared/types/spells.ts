@@ -1,3 +1,5 @@
+import { Position } from "./tiles";
+
 export interface Spell {
     cost: number;
     turn: boolean; // does it need to be your turn when you cast this spell?
@@ -19,9 +21,8 @@ export enum SpellType {
 }
 
 export interface SpellData {
-    playerId: string;
-    points: number; // points gained
     type: SpellType;
+    playerId: string;
 }
 
 export const spells: Record<SpellType, Spell> = {
@@ -86,3 +87,49 @@ export const spells: Record<SpellType, Spell> = {
         description: "Swap two tiles. Gain x.5 points for the word.",
     },
 };
+
+export interface PaintBrushSpellData extends SpellData {
+    type: SpellType.PAINTBRUSH;
+}
+
+export interface BlockSpellData extends SpellData {
+    type: SpellType.BLOCK;
+    position: Position;
+}
+
+export interface CurseSpellData extends SpellData {
+    type: SpellType.CURSE;
+    position: Position;
+}
+
+export interface GrabberSpellData extends SpellData {
+    type: SpellType.GRABBER;
+    targetPlayerId: string;
+}
+
+export interface PictographSpellData extends SpellData {
+    type: SpellType.PICTOGRAPH;
+}
+
+export interface PetroglyphSpellData extends SpellData {
+    type: SpellType.PETROGLYPH;
+}
+
+export interface HieroglyphSpellData extends SpellData {
+    type: SpellType.HIEROGLYPH;
+}
+
+export interface HoneSpellData extends SpellData {
+    type: SpellType.HONE;
+}
+
+export interface ManifestSpellData extends SpellData {
+    type: SpellType.MANIFEST;
+    position: Position;
+}
+
+export interface SwapSpellData extends SpellData {
+    type: SpellType.SWAP;
+    position: Position;
+    points: number;
+}

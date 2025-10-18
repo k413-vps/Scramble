@@ -3,13 +3,21 @@ import { Socket } from "socket.io-client";
 import { ActionToServer } from "shared/types/SocketMessages";
 import { Tile } from "shared/types/tiles";
 
-export function handlePlay(socket: Socket, hand: Tile[], currentPlayerId: string, points: number, manaGain: number) {
+export function handlePlay(
+    socket: Socket,
+    hand: Tile[],
+    currentPlayerId: string,
+    points: number,
+    manaGain: number,
+    wordsFormed: string[]
+) {
     const actionData: PlaceAction = {
         type: ActionType.PLAY,
         hand: hand,
         playerId: currentPlayerId,
         points: points,
         mana: manaGain,
+        wordsFormed: wordsFormed,
     };
 
     const message: ActionToServer = {
@@ -20,13 +28,12 @@ export function handlePlay(socket: Socket, hand: Tile[], currentPlayerId: string
 }
 
 export function handlePass(socket: Socket, currentPlayerId: string) {
-
     const actionData: PassAction = {
         type: ActionType.PASS,
         playerId: currentPlayerId,
         points: 0,
-        mana: 0
-    }
+        mana: 0,
+    };
 
     const message: ActionToServer = {
         actionData: actionData,
@@ -34,22 +41,23 @@ export function handlePass(socket: Socket, currentPlayerId: string) {
     socket.emit("action", message);
 }
 
-export function handleShuffle(socket: Socket, hand: Tile[], currentPlayerId: string) {
+export function handleShuffle(socket: Socket, hand: Tile[], currentPlayerId: string, shuffleRecall: () => void) {
+    // recall the tiles on the board
+    shuffleRecall();
 
     const actionData: ShuffleAction = {
         type: ActionType.SHUFFLE,
         hand: hand,
         playerId: currentPlayerId,
         points: 0,
-        mana: 0
-    }
+        mana: 0,
+    };
 
     const message: ActionToServer = {
         actionData: actionData,
     };
     socket.emit("action", message);
 }
-
 
 export function handleWrite() {
     // Implement write logic here
@@ -60,8 +68,8 @@ export function handleSacrifice(socket: Socket, currentPlayerId: string) {
         type: ActionType.SACRIFICE,
         playerId: currentPlayerId,
         points: -20,
-        mana: 7
-    }
+        mana: 7,
+    };
 
     const message: ActionToServer = {
         actionData: actionData,

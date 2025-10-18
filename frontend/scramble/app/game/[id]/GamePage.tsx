@@ -18,6 +18,8 @@ import { Tile } from "shared/types/tiles";
 import Leaderboard from "@/components/game/[id]/game/Leaderboard";
 import { Socket } from "socket.io-client";
 import ActionsAndSpellsWindow from "@/components/game/[id]/game/ActionsAndSpellsWindow";
+// import TurnHistory from "@/components/game/[id]/game/TurnHistory";
+import GameInfo from "@/components/game/[id]/game/GameInfo";
 
 type GamePageProps = {
     socket: Socket;
@@ -144,13 +146,24 @@ export default function GamePage({ socket }: GamePageProps) {
                         style={{
                             position: "absolute",
                             bottom: 0,
-                            left: 0,
                             width: "100%",
                             display: "flex",
                             justifyContent: "center",
                         }}
                     >
                         <TileRack />
+                    </div>
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
+                    >
+                        {/* <TurnHistory /> */}
+                        <GameInfo socket={socket} />
                     </div>
                 </div>
                 {/* <ScoreBanner /> */}

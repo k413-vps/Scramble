@@ -40,12 +40,23 @@ import {
     DrawTilesToClient,
 } from "shared/types/SocketMessages";
 
-import { createRoom, getRoom, RedisSetup, checkPlayerExists, addPlayer, setOwner, startGame } from "./util/RedisHelper";
+import {
+    createRoom,
+    getRoom,
+    RedisSetup,
+    checkPlayerExists,
+    addPlayer,
+    setOwner,
+    startGame,
+    getCurrentPlayerId,
+} from "./util/RedisHelper";
 import { parseCreateGameRequest } from "./util/APIParse";
-import { ServerSideGame, ServerSidePlayer, ClientSidePlayer } from "shared/types/game";
+import { ServerSideGame, ServerSidePlayer, ClientSidePlayer, ActionHistory, HistoryType } from "shared/types/game";
 import { convertGame, convertPlayer } from "./util/ServerClientTranslation";
 import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 import { handlePass, handlePlay, handleSacrifice, handleShuffle, handleWrite } from "./util/HandleActions";
+
+import AsyncLock from "async-lock";
 
 async function main() {
     const env = process.argv[2] || "dev";
@@ -66,6 +77,7 @@ async function main() {
 
     const app = express();
     const httpServer = http.createServer(app);
+    const lock = new AsyncLock();
 
     app.use(
         cors({
@@ -278,7 +290,7 @@ async function main() {
         });
 
         socket.on("start_game", async (msg: StartToServer) => {
-            const { players, playerOrder, bagSize } = await startGame(redisClient, roomId);
+            const { players, playerOrder, bagSize, timeOfLastTurn } = await startGame(redisClient, roomId);
 
             const socketsInRoom = await io.in(uniqueId).fetchSockets();
 
@@ -291,6 +303,7 @@ async function main() {
                     turnOrder: playerOrder,
                     hand: playerHand,
                     bagSize,
+                    timeOfLastTurn,
                 };
                 socketInstance.emit("start_game", res);
             }
@@ -302,86 +315,132 @@ async function main() {
 
         socket.on("action", async (msg: ActionToServer) => {
             const actionData = msg.actionData;
-            switch (actionData.type) {
-                case ActionType.PLAY:
-                    console.log("handling play action");
-                    const { newHand, bagSize, nextPlayerId } = await handlePlay(
-                        actionData as PlaceAction,
-                        roomId,
-                        redisClient
-                    );
+            const lockKey = `lock:${roomId}:action`;
 
-                    // can't leak info about other players' hands!!
-                    const placedTiles = (actionData as PlaceAction).hand.filter((t) => t.placed);
+            await lock.acquire(lockKey, async () => {
+                const currentPlayer = await getCurrentPlayerId(roomId, redisClient);
+                if (currentPlayer !== actionData.playerId) {
+                    console.log("Not this player's turn");
+                    console.log(`User: ${userId}, action player: ${actionData.playerId}`);
+                    return;
+                }
 
-                    const newActionData: PlaceAction = {
-                        type: ActionType.PLAY,
-                        hand: placedTiles,
-                        playerId: actionData.playerId,
-                        points: actionData.points,
-                        mana: actionData.mana,
-                    };
+                switch (actionData.type) {
+                    case ActionType.PLAY:
+                        const { newHand, bagSize, nextPlayerId, timeOfLastTurn } = await handlePlay(
+                            actionData as PlaceAction,
+                            roomId,
+                            redisClient
+                        );
 
-                    const res: ActionToClient = {
-                        actionData: newActionData,
-                        bagSize,
-                        nextPlayerId,
-                    };
+                        // can't leak info about other players' hands!!
+                        const placedTiles = (actionData as PlaceAction).hand.filter((t) => t.placed);
 
-                    io.to(uniqueId).emit("action", res);
+                        const newActionData: PlaceAction = {
+                            type: ActionType.PLAY,
+                            hand: placedTiles,
+                            playerId: actionData.playerId,
+                            points: actionData.points,
+                            mana: actionData.mana,
+                            wordsFormed: (actionData as PlaceAction).wordsFormed,
+                        };
 
-                    const newTilesRes: DrawTilesToClient = {
-                        newHand,
-                        bagSize,
-                    };
+                        const historyElementPlay: ActionHistory = {
+                            type: HistoryType.ACTION,
+                            actionData: newActionData,
+                        };
 
-                    socket.emit("draw_tiles", newTilesRes);
+                        const res: ActionToClient = {
+                            historyElement: historyElementPlay,
+                            bagSize,
+                            nextPlayerId,
+                            timeOfLastTurn,
+                        };
 
-                    break;
-                case ActionType.PASS:
-                    const nextPlayerIdPass = await handlePass(actionData as PassAction, roomId, redisClient);
-                    const resPass: ActionToClient = {
-                        actionData: actionData,
-                        nextPlayerId: nextPlayerIdPass,
-                    };
+                        io.to(uniqueId).emit("action", res);
 
-                    io.to(uniqueId).emit("action", resPass);
+                        const newTilesRes: DrawTilesToClient = {
+                            newHand,
+                            bagSize,
+                        };
 
-                    break;
-                case ActionType.SHUFFLE:
-                    const { newHand: newHandShuffle, bagSize: bagSizeShuffle, nextPlayerId: nextPlayerIdShuffle } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
-                    
-                    const resShuffle: ActionToClient = {
-                        actionData: actionData,
-                        bagSize: bagSizeShuffle,
-                        nextPlayerId: nextPlayerIdShuffle,
-                    };
+                        socket.emit("draw_tiles", newTilesRes);
 
-                    io.to(uniqueId).emit("action", resShuffle);
+                        break;
+                    case ActionType.PASS:
+                        const { nextPlayerId: nextPlayerIdPass, timeOfLastTurn: timeOfLastTurnPass } = await handlePass(actionData as PassAction, roomId, redisClient);
 
-                    const newTilesResShuffle: DrawTilesToClient = {
-                        newHand: newHandShuffle,
-                        bagSize: bagSizeShuffle,
-                    };
+                        const historyElementPass: ActionHistory = {
+                            type: HistoryType.ACTION,
+                            actionData: actionData,
+                        };
 
-                    socket.emit("draw_tiles", newTilesResShuffle);
+                        const resPass: ActionToClient = {
+                            historyElement: historyElementPass,
+                            nextPlayerId: nextPlayerIdPass,
+                            timeOfLastTurn: timeOfLastTurnPass,
+                        };
 
-                    break;
-                case ActionType.WRITE:
-                    handleWrite(actionData as WriteAction, roomId, redisClient);
-                    break;
-                case ActionType.SACRIFICE:
-                    const nextPlayerIdSacrifice = await handleSacrifice(actionData as SacrificeAction, roomId, redisClient);
-                    const resSacrifice: ActionToClient = {
-                        actionData: actionData,
-                        nextPlayerId: nextPlayerIdSacrifice,
-                    };
-                    io.to(uniqueId).emit("action", resSacrifice);
+                        io.to(uniqueId).emit("action", resPass);
 
-                    break;
-                default:
-                    console.error(`Unknown action type: ${actionData.type}`);
-            }
+                        break;
+                    case ActionType.SHUFFLE:
+                        const {
+                            newHand: newHandShuffle,
+                            bagSize: bagSizeShuffle,
+                            nextPlayerId: nextPlayerIdShuffle,
+                            timeOfLastTurn: timeOfLastTurnShuffle,
+                        } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
+
+                        const historyElementShuffle: ActionHistory = {
+                            type: HistoryType.ACTION,
+                            actionData: actionData,
+                        };
+
+                        const resShuffle: ActionToClient = {
+                            historyElement: historyElementShuffle,
+                            bagSize: bagSizeShuffle,
+                            nextPlayerId: nextPlayerIdShuffle,
+                            timeOfLastTurn: timeOfLastTurnShuffle,
+                        };
+
+                        io.to(uniqueId).emit("action", resShuffle);
+
+                        const newTilesResShuffle: DrawTilesToClient = {
+                            newHand: newHandShuffle,
+                            bagSize: bagSizeShuffle,
+                        };
+
+                        socket.emit("draw_tiles", newTilesResShuffle);
+
+                        break;
+                    case ActionType.WRITE:
+                        handleWrite(actionData as WriteAction, roomId, redisClient);
+                        break;
+                    case ActionType.SACRIFICE:
+                        const { nextPlayerId: nextPlayerIdSacrifice, timeOfLastTurn: timeOfLastTurnSacrifice } = await handleSacrifice(
+                            actionData as SacrificeAction,
+                            roomId,
+                            redisClient
+                        );
+
+                        const historyElementSacrifice: ActionHistory = {
+                            type: HistoryType.ACTION,
+                            actionData: actionData,
+                        };
+
+                        const resSacrifice: ActionToClient = {
+                            historyElement: historyElementSacrifice,
+                            nextPlayerId: nextPlayerIdSacrifice,
+                            timeOfLastTurn: timeOfLastTurnSacrifice,
+                        };
+                        io.to(uniqueId).emit("action", resSacrifice);
+
+                        break;
+                    default:
+                        console.error(`Unknown action type: ${actionData.type}`);
+                }
+            });
         });
     });
 

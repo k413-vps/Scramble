@@ -1,5 +1,5 @@
 import { ActionData } from "./actions";
-import { ClientSidePlayer } from "./game";
+import { ActionHistory, ClientSidePlayer } from "./game";
 import { Tile } from "./tiles";
 
 export interface TestMessageToClient {
@@ -30,6 +30,7 @@ export interface StartToClient {
     turnOrder: string[];
     hand: Tile[];
     bagSize: number;
+    timeOfLastTurn: number;
 }
 
 export interface ActionToServer {
@@ -37,9 +38,10 @@ export interface ActionToServer {
 }
 
 export interface ActionToClient {
-    actionData: ActionData;
+    historyElement: ActionHistory
     bagSize?: number;
     nextPlayerId: string;
+    timeOfLastTurn: number;
 }
 
 export interface DrawTilesToClient {

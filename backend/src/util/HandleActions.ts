@@ -1,7 +1,7 @@
 import { RedisClientType } from "redis";
 import { PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
-import { drawTilesRedis, placeActionBoardUpdate, pointsManaPlayerUpdate, updateTurnHistory } from "./RedisHelper";
-import { HandlePlayReturn, HandleShuffleReturn } from "./HelperTypes";
+import { drawTilesRedis, placeActionBoardUpdate, pointsManaPlayerUpdate, updateTurnHistoryAction } from "./RedisHelper";
+import { HandlePlayReturn, HandleSacrificeReturn, HandleShuffleReturn, HandlePassReturn } from "./HelperTypes";
 import { Enchantment } from "shared/types/tiles";
 
 export async function handlePlay(
@@ -14,50 +14,56 @@ export async function handlePlay(
     // update current player hand
     // update turn history
 
-    const [_1, _2, drawTiles, nextPlayerId] = await Promise.all([
+    const [_1, _2, drawTiles, { nextPlayerId, timeOfLastTurn }] = await Promise.all([
         placeActionBoardUpdate(redisClient, roomId, actionData.hand),
         pointsManaPlayerUpdate(redisClient, roomId, actionData.playerId, actionData.points, actionData.mana),
         drawTilesRedis(redisClient, roomId, actionData.playerId, actionData.hand),
-        updateTurnHistory(redisClient, roomId, actionData),
+        updateTurnHistoryAction(redisClient, roomId, actionData),
     ]);
 
-    return { newHand: drawTiles.newHand, bagSize: drawTiles.bagSize, nextPlayerId };
+    return { newHand: drawTiles.newHand, bagSize: drawTiles.bagSize, nextPlayerId, timeOfLastTurn };
 }
 
 export async function handlePass(
     actionData: PassAction,
     roomId: string,
     redisClient: RedisClientType
-): Promise<string> {
-    const nextPlayerId = await updateTurnHistory(redisClient, roomId, actionData);
+): Promise<HandlePassReturn> {
+    const { nextPlayerId, timeOfLastTurn } = await updateTurnHistoryAction(redisClient, roomId, actionData);
 
-    return nextPlayerId;
+    return { nextPlayerId, timeOfLastTurn };
 }
 
-export async function handleShuffle(actionData: ShuffleAction, roomId: string, redisClient: RedisClientType): Promise<HandleShuffleReturn> {
-
-    const negativesOnly = actionData.hand.filter(tile => tile.enchantment === Enchantment.NEGATIVE);
-    const [drawResponse, nextPlayerId] = await Promise.all([
+export async function handleShuffle(
+    actionData: ShuffleAction,
+    roomId: string,
+    redisClient: RedisClientType
+): Promise<HandleShuffleReturn> {
+    const negativesOnly = actionData.hand.filter((tile) => tile.enchantment === Enchantment.NEGATIVE);
+    const [drawResponse, { nextPlayerId, timeOfLastTurn }] = await Promise.all([
         drawTilesRedis(redisClient, roomId, actionData.playerId, negativesOnly),
-        updateTurnHistory(redisClient, roomId, actionData),
+        updateTurnHistoryAction(redisClient, roomId, actionData),
     ]);
 
     return {
         newHand: drawResponse.newHand,
         bagSize: drawResponse.bagSize,
         nextPlayerId,
+        timeOfLastTurn,
     };
 }
 
 export async function handleWrite(actionData: WriteAction, roomId: string, redisClient: RedisClientType) {}
 
-export async function handleSacrifice(actionData: SacrificeAction, roomId: string, redisClient: RedisClientType): Promise<string> {
-
-
-    const [_, nextPlayerId] = await Promise.all([
+export async function handleSacrifice(
+    actionData: SacrificeAction,
+    roomId: string,
+    redisClient: RedisClientType
+): Promise<HandleSacrificeReturn> {
+    const [_, { nextPlayerId, timeOfLastTurn }] = await Promise.all([
         pointsManaPlayerUpdate(redisClient, roomId, actionData.playerId, actionData.points, actionData.mana),
-        updateTurnHistory(redisClient, roomId, actionData),
+        updateTurnHistoryAction(redisClient, roomId, actionData),
     ]);
 
-    return nextPlayerId;
+    return { nextPlayerId, timeOfLastTurn };
 }

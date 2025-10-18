@@ -16,16 +16,33 @@ export interface StartGameReturn {
     players: ServerPlayerMap;
     playerOrder: string[];
     bagSize: number;
+    timeOfLastTurn: number;
 }
 
 export interface HandlePlayReturn {
     newHand: Tile[];
     bagSize: number;
     nextPlayerId: string;
+    timeOfLastTurn: number;
 }
 
+export interface HandlePassReturn {
+    nextPlayerId: string;
+    timeOfLastTurn: number;
+}
 export interface HandleShuffleReturn {
     newHand: Tile[];
     bagSize: number;
     nextPlayerId: string;
+    timeOfLastTurn: number;
+}
+
+export interface HandleSacrificeReturn {
+    nextPlayerId: string;
+    timeOfLastTurn: number;
+}
+
+export interface TurnHistoryActionReturn {
+    nextPlayerId: string;
+    timeOfLastTurn: number;
 }

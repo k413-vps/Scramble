@@ -1,10 +1,16 @@
 import { create } from "zustand";
-import { BoardTileType, ClientSideGame, ClientSidePlayer, DictionaryEnum } from "shared/types/game";
+import {
+    ActionHistory,
+    BoardTileType,
+    ClientSideGame,
+    ClientSidePlayer,
+    DictionaryEnum,
+    HistoryType,
+} from "shared/types/game";
 import { defaultPoints } from "shared/defaults/LetterPoints";
 import { Tile } from "shared/types/tiles";
 import { PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 import { validPlay } from "./gameLogic";
-import { shallow } from "zustand/shallow";
 
 export const useGameStore = create<
     ClientSideGame & {
@@ -12,13 +18,14 @@ export const useGameStore = create<
         init: (game: ClientSideGame) => void;
         addPlayer: (player: ClientSidePlayer, playerId: string) => void;
         setOwner: (playerId: string) => void;
-        startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number) => void;
+        startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number, timeOfLastTurn: number) => void;
         handToHand: (index1: number, index2: number) => void;
         handToBoard: (row: number, col: number, index: number) => void;
         boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
         boardToHand: (fromRow: number, fromCol: number, index: number) => void;
         setPlayerId: (playerId: string) => void;
         drawTiles: (newHand: Tile[], bagSize: number) => void;
+        setTimeOfLastTurn: (time: number) => void;
 
         placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => void;
         passAction: (action: PassAction, nextPlayerId: string) => void;
@@ -26,6 +33,7 @@ export const useGameStore = create<
         writeAction: (action: WriteAction, nextPlayerId: string) => void;
         sacrificeAction: (action: SacrificeAction, nextPlayerId: string) => void;
 
+        shuffleRecall: () => void;
         recallTiles: () => void;
 
         // getters
@@ -61,13 +69,14 @@ export const useGameStore = create<
     gameStarted: false,
     ownerId: "",
 
-    startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number) => {
+    startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number, timeOfLastTurn: number) => {
         set(() => ({
             gameStarted: true,
             playerTurnOrder: turnOrder,
             hand,
             currentPlayerId: turnOrder[0],
             tilesRemaining,
+            timeOfLastTurn,
         }));
     },
 
@@ -178,6 +187,12 @@ export const useGameStore = create<
         }));
     },
 
+    setTimeOfLastTurn: (time: number) => {
+        set(() => ({
+            timeOfLastTurn: time,
+        }));
+    },
+
     placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => {
         set((state) => {
             const placedTiles = action.hand;
@@ -204,11 +219,16 @@ export const useGameStore = create<
                 }
             }
 
+            const historyElement: ActionHistory = {
+                type: HistoryType.ACTION,
+                actionData: action,
+            };
+
             const output = {
                 board: newBoard,
                 tilesRemaining: bagSize,
                 currentPlayerId: nextPlayerId,
-                turnHistory: [...state.turnHistory, action],
+                turnHistory: [...state.turnHistory, historyElement],
                 players,
                 hand: newHand,
             };
@@ -218,14 +238,27 @@ export const useGameStore = create<
     },
 
     passAction: (action: PassAction, nextPlayerId: string) => {
-        set((state) => ({ currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, action] }));
+        set((state) => {
+            const historyElement: ActionHistory = {
+                type: HistoryType.ACTION,
+                actionData: action,
+            };
+
+            return { currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, historyElement] };
+        });
     },
     shuffleAction: (action: ShuffleAction, bagSize: number, nextPlayerId: string) => {
-        set((state) => ({
-            currentPlayerId: nextPlayerId,
-            turnHistory: [...state.turnHistory, action],
-            tilesRemaining: bagSize,
-        }));
+        set((state) => {
+            const historyElement: ActionHistory = {
+                type: HistoryType.ACTION,
+                actionData: action,
+            };
+            return {
+                currentPlayerId: nextPlayerId,
+                turnHistory: [...state.turnHistory, historyElement],
+                tilesRemaining: bagSize,
+            };
+        });
     },
     writeAction: (action: WriteAction, nextPlayerId: string) => {
         set((state) => ({ currentPlayerId: nextPlayerId }));
@@ -236,7 +269,12 @@ export const useGameStore = create<
             players[state.currentPlayerId].points += action.points;
             players[state.currentPlayerId].mana += action.mana;
 
-            return { players, currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, action] };
+            const historyElement: ActionHistory = {
+                type: HistoryType.ACTION,
+                actionData: action,
+            };
+
+            return { players, currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, historyElement] };
         });
     },
 
@@ -252,6 +290,20 @@ export const useGameStore = create<
                 }
             }
             return { board: newBoard, hand: newHand };
+        });
+    },
+
+    shuffleRecall: () => {
+        set((state) => {
+            const newBoard = state.board.map((r) => r.slice());
+            for (const tile of state.hand) {
+                if (tile.position) {
+                    const { row, col } = tile.position;
+                    newBoard[row][col] = null;
+                    tile.position = null;
+                }
+            }
+            return { board: newBoard };
         });
     },
 

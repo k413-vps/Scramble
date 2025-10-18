@@ -42,6 +42,8 @@ export default function Page() {
 
     const setPlayerId = useGameStore((state) => state.setPlayerId);
 
+    const setTimeOfLastTurn = useGameStore((state) => state.setTimeOfLastTurn);
+
     const [socketConnected, setSocketConnected] = useState(false);
 
     async function fetchState(): Promise<ClientSideGame | null> {
@@ -86,37 +88,38 @@ export default function Page() {
     };
 
     const handleStart = (msg: StartToClient) => {
-        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.bagSize);
+        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.bagSize, msg.timeOfLastTurn);
     };
 
     const handlePlay = (msg: ActionToClient) => {
-        const actionData = msg.actionData as PlaceAction;
+        const actionData = msg.historyElement.actionData as PlaceAction;
 
         useGameStore.getState().placeAction(actionData, msg.bagSize!, msg.nextPlayerId);
     };
 
     const handlePass = (msg: ActionToClient) => {
-        const actionData = msg.actionData as PassAction;
+        const actionData = msg.historyElement.actionData as PassAction;
         useGameStore.getState().passAction(actionData, msg.nextPlayerId);
     };
 
     const handleShuffle = (msg: ActionToClient) => {
-        const actionData = msg.actionData as ShuffleAction;
+        const actionData = msg.historyElement.actionData as ShuffleAction;
         useGameStore.getState().shuffleAction(actionData, msg.bagSize!, msg.nextPlayerId);
     };
 
     const handleWrite = (msg: ActionToClient) => {
-        const actionData = msg.actionData as WriteAction;
+        const actionData = msg.historyElement.actionData as WriteAction;
         useGameStore.getState().writeAction(actionData, msg.nextPlayerId);
     };
 
     const handleSacrifice = (msg: ActionToClient) => {
-        const actionData = msg.actionData as SacrificeAction;
+        const actionData = msg.historyElement.actionData as SacrificeAction;
         useGameStore.getState().sacrificeAction(actionData, msg.nextPlayerId);
     };
 
     const handleAction = (msg: ActionToClient) => {
-        const actionData = msg.actionData;
+        const actionData = msg.historyElement.actionData;
+
         switch (actionData.type) {
             case ActionType.PLAY:
                 handlePlay(msg);
@@ -134,6 +137,9 @@ export default function Page() {
                 handleSacrifice(msg);
                 break;
         }
+
+
+        setTimeOfLastTurn(msg.timeOfLastTurn);
     };
 
     const handleDrawTiles = (msg: DrawTilesToClient) => {
@@ -166,6 +172,8 @@ export default function Page() {
             socket.on("start_game", handleStart);
             socket.on("action", handleAction);
             socket.on("draw_tiles", handleDrawTiles);
+
+            setPlayerId(session!.user.id);
         } else if (!authPending) {
             setPlayerId(session!.user.id);
         }

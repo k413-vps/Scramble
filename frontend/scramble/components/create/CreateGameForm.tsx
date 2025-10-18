@@ -33,7 +33,7 @@ export function CreateGameForm() {
             enableEnchantments: true,
             enableSpecialActions: true,
             public: true,
-            timePerTurn: 150,
+            timePerTurn: 300,
             seed: "",
         },
     });

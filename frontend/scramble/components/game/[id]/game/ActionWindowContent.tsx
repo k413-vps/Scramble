@@ -20,16 +20,18 @@ export default function ActionWindowContent({ socket }: ActionWindowContentProps
     const isValidPlay = useGameStore((state) => state.getValidPlay());
     const isCurrentPlayer = playerId === currentPlayerId;
 
-    console.log("please help why is it crashing")
-    console.log("player", player)
-    console.log("playerId", playerId)
-    console.log("currentPlayerId", currentPlayerId)
+    const shuffleRecall = useGameStore((state) => state.shuffleRecall);
+
+    console.log("please help why is it crashing");
+    console.log("player", player);
+    console.log("playerId", playerId);
+    console.log("currentPlayerId", currentPlayerId);
     // const mana = player!.mana;
 
     const board = useGameStore((state) => state.board);
     const enhancements = useGameStore((state) => state.enhancements);
     const dictionary = useGameStore((state) => state.dictionary);
-    const { points, mana: manaGain } = calculateScore(board, enhancements, dictionary);
+    const { points, mana: manaGain, wordsFormed } = calculateScore(board, enhancements, dictionary);
 
     return (
         <div
@@ -41,22 +43,26 @@ export default function ActionWindowContent({ socket }: ActionWindowContentProps
                 color: "var(--color-card-foreground)",
                 display: "flex",
                 flexDirection: "column",
-                position: "relative", 
+                position: "relative",
                 overflow: "visible",
             }}
         >
             <div>
                 <ActionsEntry
                     action={actions[ActionType.PLAY]}
-                    onClick={() => handlePlay(socket, hand, playerId, points, manaGain)}
+                    onClick={() => handlePlay(socket, hand, playerId, points, manaGain, wordsFormed)}
                     disabled={!isCurrentPlayer || !isValidPlay}
                 >
                     {isValidPlay && <ScorePill points={points} mana={manaGain} />}
                 </ActionsEntry>
-                <ActionsEntry action={actions[ActionType.PASS]} onClick={() => handlePass(socket, playerId)} disabled={!isCurrentPlayer} />
+                <ActionsEntry
+                    action={actions[ActionType.PASS]}
+                    onClick={() => handlePass(socket, playerId)}
+                    disabled={!isCurrentPlayer}
+                />
                 <ActionsEntry
                     action={actions[ActionType.SHUFFLE]}
-                    onClick={() => handleShuffle(socket, hand, playerId)}
+                    onClick={() => handleShuffle(socket, hand, playerId, shuffleRecall)}
                     disabled={!isCurrentPlayer}
                 />
                 {/* <ActionsEntry
