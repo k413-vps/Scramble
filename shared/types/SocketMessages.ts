@@ -30,6 +30,7 @@ export interface StartToClient {
     turnOrder: string[];
     hand: Tile[];
     bagSize: number;
+    timeOfLastTurn: number;
 }
 
 export interface ActionToServer {
@@ -40,6 +41,7 @@ export interface ActionToClient {
     historyElement: ActionHistory
     bagSize?: number;
     nextPlayerId: string;
+    timeOfLastTurn: number;
 }
 
 export interface DrawTilesToClient {

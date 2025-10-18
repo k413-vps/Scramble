@@ -42,6 +42,8 @@ export default function Page() {
 
     const setPlayerId = useGameStore((state) => state.setPlayerId);
 
+    const setTimeOfLastTurn = useGameStore((state) => state.setTimeOfLastTurn);
+
     const [socketConnected, setSocketConnected] = useState(false);
 
     async function fetchState(): Promise<ClientSideGame | null> {
@@ -86,7 +88,7 @@ export default function Page() {
     };
 
     const handleStart = (msg: StartToClient) => {
-        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.bagSize);
+        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.bagSize, msg.timeOfLastTurn);
     };
 
     const handlePlay = (msg: ActionToClient) => {
@@ -135,6 +137,9 @@ export default function Page() {
                 handleSacrifice(msg);
                 break;
         }
+
+
+        setTimeOfLastTurn(msg.timeOfLastTurn);
     };
 
     const handleDrawTiles = (msg: DrawTilesToClient) => {

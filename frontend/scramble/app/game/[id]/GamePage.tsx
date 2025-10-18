@@ -19,6 +19,7 @@ import Leaderboard from "@/components/game/[id]/game/Leaderboard";
 import { Socket } from "socket.io-client";
 import ActionsAndSpellsWindow from "@/components/game/[id]/game/ActionsAndSpellsWindow";
 import TurnHistory from "@/components/game/[id]/game/TurnHistory";
+import GameInfo from "@/components/game/[id]/game/GameInfo";
 
 type GamePageProps = {
     socket: Socket;
@@ -161,7 +162,8 @@ export default function GamePage({ socket }: GamePageProps) {
                             justifyContent: "center",
                         }}
                     >
-                        <TurnHistory />
+                        {/* <TurnHistory /> */}
+                        <GameInfo socket={socket} />
                     </div>
                 </div>
                 {/* <ScoreBanner /> */}

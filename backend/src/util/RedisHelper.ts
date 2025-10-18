@@ -14,7 +14,7 @@ import { drawTiles } from "./GameLogic";
 import { Tile } from "shared/types/tiles";
 import { LetterPoints } from "shared/types/misc";
 import { ActionData, ActionType, PlaceAction } from "shared/types/actions";
-import { DrawTilesReturn, RedisSetupReturn, StartGameReturn } from "./HelperTypes";
+import { DrawTilesReturn, RedisSetupReturn, StartGameReturn, TurnHistoryActionReturn } from "./HelperTypes";
 
 export function RedisSetup(redisUrl: string): RedisSetupReturn {
     const redisClient: RedisClientType = createClient({
@@ -89,6 +89,16 @@ export async function getRoom(id: string, redisClient: RedisClientType): Promise
     const game: ServerSideGame = (await redisClient.json.get(`games:${id}`)) as unknown as ServerSideGame;
 
     return game;
+}
+
+export async function getCurrentPlayerId(roomId: string, redisClient: RedisClientType): Promise<string> {
+    const key = `games:${roomId}`;
+
+    const result = JSON.parse(
+        (await redisClient.sendCommand(["JSON.GET", key, "currentPlayerId"])) as unknown as string
+    );
+
+    return result;
 }
 
 export async function checkPlayerExists(
@@ -204,6 +214,7 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
 
     const gameStarted = true;
 
+    const timeOfLastTurn = Date.now() + 900; // slight buffer to account for delays
     const command = [
         "JSON.MSET",
         key,
@@ -221,11 +232,14 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
         key,
         "players",
         JSON.stringify(players),
+        key,
+        "timeOfLastTurn",
+        JSON.stringify(timeOfLastTurn),
     ];
 
     await redisClient.sendCommand(command);
 
-    return { players, playerOrder, bagSize: bag.length };
+    return { players, playerOrder, bagSize: bag.length, timeOfLastTurn };
 }
 
 export async function placeActionBoardUpdate(
@@ -275,7 +289,7 @@ export async function updateTurnHistoryAction(
     redisClient: RedisClientType,
     roomId: string,
     actionData: ActionData
-): Promise<string> {
+): Promise<TurnHistoryActionReturn> {
     const key = `games:${roomId}`;
     const playerId = actionData.playerId;
 
@@ -289,6 +303,8 @@ export async function updateTurnHistoryAction(
     const currentIndex = turnOrder.indexOf(playerId);
     const nextIndex = (currentIndex + 1) % turnOrder.length;
     const nextPlayerId = turnOrder[nextIndex];
+
+    const timeOfLastTurn = Date.now() + 1500;
 
     if (actionData.type == ActionType.PLAY) {
         const placeAction = actionData as PlaceAction;
@@ -305,7 +321,15 @@ export async function updateTurnHistoryAction(
                 "turnHistory",
                 JSON.parse(JSON.stringify(historyElementPlay))
             ),
-            redisClient.json.set(`games:${roomId}`, "currentPlayerId", nextPlayerId),
+            redisClient.sendCommand([
+                "JSON.MSET",
+                key,
+                "currentPlayerId",
+                JSON.stringify(nextPlayerId),
+                key,
+                "timeOfLastTurn",
+                JSON.stringify(timeOfLastTurn),
+            ]),
         ]);
     } else {
         const historyElementOther: ActionHistory = {
@@ -319,9 +343,17 @@ export async function updateTurnHistoryAction(
                 "turnHistory",
                 JSON.parse(JSON.stringify(historyElementOther))
             ),
-            redisClient.json.set(`games:${roomId}`, "currentPlayerId", nextPlayerId),
+            redisClient.sendCommand([
+                "JSON.MSET",
+                key,
+                "currentPlayerId",
+                JSON.stringify(nextPlayerId),
+                key,
+                "timeOfLastTurn",
+                JSON.stringify(timeOfLastTurn),
+            ]),
         ]);
     }
 
-    return nextPlayerId;
+    return { nextPlayerId, timeOfLastTurn };
 }

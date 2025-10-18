@@ -21,8 +21,8 @@ export const createGameFormSchema = z.object({
             .number({
                 invalid_type_error: "Time has to be a number",
             })
-            .min(30, "Atleast 30 seconds needed")
-            .max(600, "Can't be more than 10 minutes"),
+            .min(30, "Atleast 30 seconds needed") 
+            .max(600, "Can't be more than 10 minutes. Set to blank for unlimited time if thats what you want"),
         z.literal(""),
     ]),
     seed: z.union([

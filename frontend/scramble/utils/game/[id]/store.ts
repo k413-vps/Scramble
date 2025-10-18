@@ -18,13 +18,14 @@ export const useGameStore = create<
         init: (game: ClientSideGame) => void;
         addPlayer: (player: ClientSidePlayer, playerId: string) => void;
         setOwner: (playerId: string) => void;
-        startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number) => void;
+        startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number, timeOfLastTurn: number) => void;
         handToHand: (index1: number, index2: number) => void;
         handToBoard: (row: number, col: number, index: number) => void;
         boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
         boardToHand: (fromRow: number, fromCol: number, index: number) => void;
         setPlayerId: (playerId: string) => void;
         drawTiles: (newHand: Tile[], bagSize: number) => void;
+        setTimeOfLastTurn: (time: number) => void;
 
         placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => void;
         passAction: (action: PassAction, nextPlayerId: string) => void;
@@ -68,13 +69,14 @@ export const useGameStore = create<
     gameStarted: false,
     ownerId: "",
 
-    startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number) => {
+    startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number, timeOfLastTurn: number) => {
         set(() => ({
             gameStarted: true,
             playerTurnOrder: turnOrder,
             hand,
             currentPlayerId: turnOrder[0],
             tilesRemaining,
+            timeOfLastTurn,
         }));
     },
 
@@ -182,6 +184,12 @@ export const useGameStore = create<
         set(() => ({
             hand: newHand,
             tilesRemaining: bagSize,
+        }));
+    },
+
+    setTimeOfLastTurn: (time: number) => {
+        set(() => ({
+            timeOfLastTurn: time,
         }));
     },
 

@@ -5,13 +5,18 @@ import { useGameStore } from "@/utils/game/[id]/store";
 import { ActionHistory, ClientSidePlayer, HistoryType, SpellHistory, HistoryElement } from "shared/types/game";
 import { getMessage } from "@/utils/game/[id]/History";
 import Image from "next/image";
+import { Socket } from "socket.io-client";
+import { handlePass } from "@/utils/game/[id]/HandleActions";
 
-export default function TurnHistory() {
+type GameInfoProps = { socket: Socket };
+
+export default function GameInfo({ socket }: GameInfoProps) {
     const turnHistory = useGameStore((s) => s.turnHistory);
     const players = useGameStore((s) => s.players);
     const timePerTurn = useGameStore((s) => s.timePerTurn);
     const timeOfLastTurn = useGameStore((s) => s.timeOfLastTurn);
     const tilesRemaining = useGameStore((s) => s.tilesRemaining);
+    const currentPlayerId = useGameStore((s) => s.currentPlayerId);
 
     const [index, setIndex] = useState(0);
     const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
@@ -21,25 +26,38 @@ export default function TurnHistory() {
     }, [turnHistory]);
 
     useEffect(() => {
-        if (!timePerTurn || timePerTurn <= 0) {
-            setTimeLeftMs(null);
-            return;
-        }
+        let id: ReturnType<typeof setInterval> | null = null;
 
         const calc = () => {
+            if (timePerTurn === 0) {
+                setTimeLeftMs(null); // No timer
+                return;
+            }
             const elapsed = Date.now() - timeOfLastTurn;
-            const remaining = Math.max(0, timePerTurn - elapsed);
+            const remaining = Math.max(0, timePerTurn * 1000 - elapsed);
             setTimeLeftMs(remaining);
+
+            if (remaining <= 0 && id !== null) {
+                clearInterval(id);
+                id = null;
+
+                handlePass(socket, currentPlayerId);
+            }
         };
 
         calc();
-        const id = setInterval(calc, 500);
-        return () => clearInterval(id);
+        if (timePerTurn !== 0) {
+            id = setInterval(calc, 500);
+        }
+        return () => {
+            if (id !== null) clearInterval(id);
+        };
     }, [timePerTurn, timeOfLastTurn]);
 
     const formatTime = (ms: number | null) => {
-        if (ms === null) return "Unlimited";
-        const seconds = Math.ceil(ms / 1000);
+        if (ms === null) return "∞"; // Infinity sign for no timer
+        let cappedMS = Math.min(timePerTurn * 1000, ms);
+        const seconds = Math.floor(cappedMS / 1000);
         const mm = Math.floor(seconds / 60);
         const ss = seconds % 60;
         return `${mm}:${ss.toString().padStart(2, "0")}`;
@@ -47,7 +65,7 @@ export default function TurnHistory() {
 
     const containerStyle: CSSProperties = {
         backgroundColor: "var(--color-card)",
-        height: "160px",
+        height: "140px",
         width: "560px",
         borderRadius: "var(--radius-md)",
         display: "flex",
@@ -121,7 +139,7 @@ export default function TurnHistory() {
                         padding: "12px",
                         paddingTop: 5,
                         marginLeft: 8,
-                        height: "90px",
+                        height: "70px",
                     }}
                 >
                     <div
@@ -157,7 +175,8 @@ export default function TurnHistory() {
                 <div
                     style={{
                         display: "flex",
-                        // alignItems: "center",
+                        alignItems: "center",
+                        justifyContent: "center",
                         gap: 12,
                         flex: 1,
                         width: "100%",
@@ -166,7 +185,12 @@ export default function TurnHistory() {
                         height: "90px",
                     }}
                 >
-                    No turns yet!!!!
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                        <div style={{ fontWeight: 600 }}>No turns yet</div>
+                        <div style={{ color: "var(--muted-foreground)" }}>
+                            The first turn will appear here once a player takes it.
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -176,21 +200,24 @@ export default function TurnHistory() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    height: "30px",
-                    backgroundColor: " var(--background)",
+                    height: "40px", // Increased height for better visibility
+                    backgroundColor: "var(--background)",
                     width: "100%",
                     gap: 8,
                     padding: "0 12px",
                     borderBottomLeftRadius: "var(--radius-md)",
                     borderBottomRightRadius: "var(--radius-md)",
-                    fontSize: 13,
+                    fontSize: 16, // Increased font size
+                    fontWeight: 700, // Made text bold
+                    color: "var(--foreground)", // More prominent color
                 }}
             >
-                <div style={{ color: "var(--muted-foreground)" }}>
-                    Time left: <span style={{ fontWeight: 600, color: "inherit" }}>{formatTime(timeLeftMs)}</span>
+                <div>
+                    Time left:{" "}
+                    <span style={{ fontWeight: 800, color: "var(--primary)" }}>{formatTime(timeLeftMs)}</span>
                 </div>
-                <div style={{ color: "var(--muted-foreground)" }}>
-                    Tiles left: <span style={{ fontWeight: 600, color: "inherit" }}>{tilesRemaining}</span>
+                <div>
+                    Tiles left: <span style={{ fontWeight: 800, color: "var(--primary)" }}>{tilesRemaining}</span>
                 </div>
             </div>
         </div>

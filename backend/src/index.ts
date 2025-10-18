@@ -40,12 +40,23 @@ import {
     DrawTilesToClient,
 } from "shared/types/SocketMessages";
 
-import { createRoom, getRoom, RedisSetup, checkPlayerExists, addPlayer, setOwner, startGame } from "./util/RedisHelper";
+import {
+    createRoom,
+    getRoom,
+    RedisSetup,
+    checkPlayerExists,
+    addPlayer,
+    setOwner,
+    startGame,
+    getCurrentPlayerId,
+} from "./util/RedisHelper";
 import { parseCreateGameRequest } from "./util/APIParse";
 import { ServerSideGame, ServerSidePlayer, ClientSidePlayer, ActionHistory, HistoryType } from "shared/types/game";
 import { convertGame, convertPlayer } from "./util/ServerClientTranslation";
 import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 import { handlePass, handlePlay, handleSacrifice, handleShuffle, handleWrite } from "./util/HandleActions";
+
+import AsyncLock from "async-lock";
 
 async function main() {
     const env = process.argv[2] || "dev";
@@ -66,6 +77,7 @@ async function main() {
 
     const app = express();
     const httpServer = http.createServer(app);
+    const lock = new AsyncLock();
 
     app.use(
         cors({
@@ -278,7 +290,7 @@ async function main() {
         });
 
         socket.on("start_game", async (msg: StartToServer) => {
-            const { players, playerOrder, bagSize } = await startGame(redisClient, roomId);
+            const { players, playerOrder, bagSize, timeOfLastTurn } = await startGame(redisClient, roomId);
 
             const socketsInRoom = await io.in(uniqueId).fetchSockets();
 
@@ -291,6 +303,7 @@ async function main() {
                     turnOrder: playerOrder,
                     hand: playerHand,
                     bagSize,
+                    timeOfLastTurn,
                 };
                 socketInstance.emit("start_game", res);
             }
@@ -302,116 +315,132 @@ async function main() {
 
         socket.on("action", async (msg: ActionToServer) => {
             const actionData = msg.actionData;
-            switch (actionData.type) {
-                case ActionType.PLAY:
-                    const { newHand, bagSize, nextPlayerId } = await handlePlay(
-                        actionData as PlaceAction,
-                        roomId,
-                        redisClient
-                    );
+            const lockKey = `lock:${roomId}:action`;
 
-                    // can't leak info about other players' hands!!
-                    const placedTiles = (actionData as PlaceAction).hand.filter((t) => t.placed);
+            await lock.acquire(lockKey, async () => {
+                const currentPlayer = await getCurrentPlayerId(roomId, redisClient);
+                if (currentPlayer !== actionData.playerId) {
+                    console.log("Not this player's turn");
+                    console.log(`User: ${userId}, action player: ${actionData.playerId}`);
+                    return;
+                }
 
-                    const newActionData: PlaceAction = {
-                        type: ActionType.PLAY,
-                        hand: placedTiles,
-                        playerId: actionData.playerId,
-                        points: actionData.points,
-                        mana: actionData.mana,
-                        wordsFormed: (actionData as PlaceAction).wordsFormed,
-                    };
+                switch (actionData.type) {
+                    case ActionType.PLAY:
+                        const { newHand, bagSize, nextPlayerId, timeOfLastTurn } = await handlePlay(
+                            actionData as PlaceAction,
+                            roomId,
+                            redisClient
+                        );
 
-                    const historyElementPlay: ActionHistory = {
-                        type: HistoryType.ACTION,
-                        actionData: newActionData,
-                    };
+                        // can't leak info about other players' hands!!
+                        const placedTiles = (actionData as PlaceAction).hand.filter((t) => t.placed);
 
-                    const res: ActionToClient = {
-                        historyElement: historyElementPlay,
-                        bagSize,
-                        nextPlayerId,
-                    };
+                        const newActionData: PlaceAction = {
+                            type: ActionType.PLAY,
+                            hand: placedTiles,
+                            playerId: actionData.playerId,
+                            points: actionData.points,
+                            mana: actionData.mana,
+                            wordsFormed: (actionData as PlaceAction).wordsFormed,
+                        };
 
-                    io.to(uniqueId).emit("action", res);
+                        const historyElementPlay: ActionHistory = {
+                            type: HistoryType.ACTION,
+                            actionData: newActionData,
+                        };
 
-                    const newTilesRes: DrawTilesToClient = {
-                        newHand,
-                        bagSize,
-                    };
+                        const res: ActionToClient = {
+                            historyElement: historyElementPlay,
+                            bagSize,
+                            nextPlayerId,
+                            timeOfLastTurn,
+                        };
 
-                    socket.emit("draw_tiles", newTilesRes);
+                        io.to(uniqueId).emit("action", res);
 
-                    break;
-                case ActionType.PASS:
-                    const nextPlayerIdPass = await handlePass(actionData as PassAction, roomId, redisClient);
+                        const newTilesRes: DrawTilesToClient = {
+                            newHand,
+                            bagSize,
+                        };
 
-                    const historyElementPass: ActionHistory = {
-                        type: HistoryType.ACTION,
-                        actionData: actionData,
-                    };
+                        socket.emit("draw_tiles", newTilesRes);
 
-                    const resPass: ActionToClient = {
-                        historyElement: historyElementPass,
-                        nextPlayerId: nextPlayerIdPass,
-                    };
+                        break;
+                    case ActionType.PASS:
+                        const { nextPlayerId: nextPlayerIdPass, timeOfLastTurn: timeOfLastTurnPass } = await handlePass(actionData as PassAction, roomId, redisClient);
 
-                    io.to(uniqueId).emit("action", resPass);
+                        const historyElementPass: ActionHistory = {
+                            type: HistoryType.ACTION,
+                            actionData: actionData,
+                        };
 
-                    break;
-                case ActionType.SHUFFLE:
-                    const {
-                        newHand: newHandShuffle,
-                        bagSize: bagSizeShuffle,
-                        nextPlayerId: nextPlayerIdShuffle,
-                    } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
+                        const resPass: ActionToClient = {
+                            historyElement: historyElementPass,
+                            nextPlayerId: nextPlayerIdPass,
+                            timeOfLastTurn: timeOfLastTurnPass,
+                        };
 
-                    const historyElementShuffle: ActionHistory = {
-                        type: HistoryType.ACTION,
-                        actionData: actionData,
-                    };
+                        io.to(uniqueId).emit("action", resPass);
 
-                    const resShuffle: ActionToClient = {
-                        historyElement: historyElementShuffle,
-                        bagSize: bagSizeShuffle,
-                        nextPlayerId: nextPlayerIdShuffle,
-                    };
+                        break;
+                    case ActionType.SHUFFLE:
+                        const {
+                            newHand: newHandShuffle,
+                            bagSize: bagSizeShuffle,
+                            nextPlayerId: nextPlayerIdShuffle,
+                            timeOfLastTurn: timeOfLastTurnShuffle,
+                        } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
 
-                    io.to(uniqueId).emit("action", resShuffle);
+                        const historyElementShuffle: ActionHistory = {
+                            type: HistoryType.ACTION,
+                            actionData: actionData,
+                        };
 
-                    const newTilesResShuffle: DrawTilesToClient = {
-                        newHand: newHandShuffle,
-                        bagSize: bagSizeShuffle,
-                    };
+                        const resShuffle: ActionToClient = {
+                            historyElement: historyElementShuffle,
+                            bagSize: bagSizeShuffle,
+                            nextPlayerId: nextPlayerIdShuffle,
+                            timeOfLastTurn: timeOfLastTurnShuffle,
+                        };
 
-                    socket.emit("draw_tiles", newTilesResShuffle);
+                        io.to(uniqueId).emit("action", resShuffle);
 
-                    break;
-                case ActionType.WRITE:
-                    handleWrite(actionData as WriteAction, roomId, redisClient);
-                    break;
-                case ActionType.SACRIFICE:
-                    const nextPlayerIdSacrifice = await handleSacrifice(
-                        actionData as SacrificeAction,
-                        roomId,
-                        redisClient
-                    );
+                        const newTilesResShuffle: DrawTilesToClient = {
+                            newHand: newHandShuffle,
+                            bagSize: bagSizeShuffle,
+                        };
 
-                    const historyElementSacrifice: ActionHistory = {
-                        type: HistoryType.ACTION,
-                        actionData: actionData,
-                    };
+                        socket.emit("draw_tiles", newTilesResShuffle);
 
-                    const resSacrifice: ActionToClient = {
-                        historyElement: historyElementSacrifice,
-                        nextPlayerId: nextPlayerIdSacrifice,
-                    };
-                    io.to(uniqueId).emit("action", resSacrifice);
+                        break;
+                    case ActionType.WRITE:
+                        handleWrite(actionData as WriteAction, roomId, redisClient);
+                        break;
+                    case ActionType.SACRIFICE:
+                        const { nextPlayerId: nextPlayerIdSacrifice, timeOfLastTurn: timeOfLastTurnSacrifice } = await handleSacrifice(
+                            actionData as SacrificeAction,
+                            roomId,
+                            redisClient
+                        );
 
-                    break;
-                default:
-                    console.error(`Unknown action type: ${actionData.type}`);
-            }
+                        const historyElementSacrifice: ActionHistory = {
+                            type: HistoryType.ACTION,
+                            actionData: actionData,
+                        };
+
+                        const resSacrifice: ActionToClient = {
+                            historyElement: historyElementSacrifice,
+                            nextPlayerId: nextPlayerIdSacrifice,
+                            timeOfLastTurn: timeOfLastTurnSacrifice,
+                        };
+                        io.to(uniqueId).emit("action", resSacrifice);
+
+                        break;
+                    default:
+                        console.error(`Unknown action type: ${actionData.type}`);
+                }
+            });
         });
     });
 
@@ -419,6 +448,5 @@ async function main() {
         console.log(`listening on port ${PORT}`);
     });
 }
-
 
 main(); // i need top level await so bad man
