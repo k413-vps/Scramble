@@ -167,6 +167,8 @@ export default function Page() {
             socket.on("start_game", handleStart);
             socket.on("action", handleAction);
             socket.on("draw_tiles", handleDrawTiles);
+
+            setPlayerId(session!.user.id);
         } else if (!authPending) {
             setPlayerId(session!.user.id);
         }

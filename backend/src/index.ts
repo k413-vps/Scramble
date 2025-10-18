@@ -319,6 +319,7 @@ async function main() {
                         playerId: actionData.playerId,
                         points: actionData.points,
                         mana: actionData.mana,
+                        wordsFormed: (actionData as PlaceAction).wordsFormed,
                     };
 
                     const historyElementPlay: ActionHistory = {
@@ -344,7 +345,6 @@ async function main() {
                     break;
                 case ActionType.PASS:
                     const nextPlayerIdPass = await handlePass(actionData as PassAction, roomId, redisClient);
-                    
 
                     const historyElementPass: ActionHistory = {
                         type: HistoryType.ACTION,
@@ -360,8 +360,12 @@ async function main() {
 
                     break;
                 case ActionType.SHUFFLE:
-                    const { newHand: newHandShuffle, bagSize: bagSizeShuffle, nextPlayerId: nextPlayerIdShuffle } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
-                    
+                    const {
+                        newHand: newHandShuffle,
+                        bagSize: bagSizeShuffle,
+                        nextPlayerId: nextPlayerIdShuffle,
+                    } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
+
                     const historyElementShuffle: ActionHistory = {
                         type: HistoryType.ACTION,
                         actionData: actionData,
@@ -387,7 +391,11 @@ async function main() {
                     handleWrite(actionData as WriteAction, roomId, redisClient);
                     break;
                 case ActionType.SACRIFICE:
-                    const nextPlayerIdSacrifice = await handleSacrifice(actionData as SacrificeAction, roomId, redisClient);
+                    const nextPlayerIdSacrifice = await handleSacrifice(
+                        actionData as SacrificeAction,
+                        roomId,
+                        redisClient
+                    );
 
                     const historyElementSacrifice: ActionHistory = {
                         type: HistoryType.ACTION,
@@ -411,5 +419,6 @@ async function main() {
         console.log(`listening on port ${PORT}`);
     });
 }
+
 
 main(); // i need top level await so bad man

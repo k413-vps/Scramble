@@ -159,10 +159,7 @@ export async function drawTilesRedis(
     let hand = (currentHand ?? json[`players.${playerId}.hand`]) as Tile[];
     hand = hand.filter((tile) => !tile.placed);
 
-    console.log("drawing tiles", hand);
     const newTiles = await drawTiles(bag, hand, handSize, purchasedSpells, seed, points);
-    console.log("after drawing tiles", hand);
-    console.log("new tiles", newTiles);
 
     hand.push(...newTiles);
     await redisClient.sendCommand([
@@ -250,6 +247,8 @@ export async function placeActionBoardUpdate(
             type: BoardTileType.TILE,
             tile: tile,
         };
+
+        console.log("tile type", boardTile.type);
 
         command.push(key, `board[${pos.row}][${pos.col}]`, JSON.stringify(boardTile));
     }

@@ -11,7 +11,6 @@ import { defaultPoints } from "shared/defaults/LetterPoints";
 import { Tile } from "shared/types/tiles";
 import { PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 import { validPlay } from "./gameLogic";
-import { shallow } from "zustand/shallow";
 
 export const useGameStore = create<
     ClientSideGame & {
@@ -33,6 +32,7 @@ export const useGameStore = create<
         writeAction: (action: WriteAction, nextPlayerId: string) => void;
         sacrificeAction: (action: SacrificeAction, nextPlayerId: string) => void;
 
+        shuffleRecall: () => void;
         recallTiles: () => void;
 
         // getters
@@ -282,6 +282,20 @@ export const useGameStore = create<
                 }
             }
             return { board: newBoard, hand: newHand };
+        });
+    },
+
+    shuffleRecall: () => {
+        set((state) => {
+            const newBoard = state.board.map((r) => r.slice());
+            for (const tile of state.hand) {
+                if (tile.position) {
+                    const { row, col } = tile.position;
+                    newBoard[row][col] = null;
+                    tile.position = null;
+                }
+            }
+            return { board: newBoard };
         });
     },
 

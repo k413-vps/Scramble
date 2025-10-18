@@ -180,6 +180,18 @@ function validPlacement(
     return false;
 }
 
+function wordsFormed(board: Array<Array<BoardTile | null>>, planned: Tile[]): string[] {
+    const wordTiles = newWords(board, planned);
+    const words = wordTiles.map((tiles) =>
+        tiles
+            .map((t) => t.letter)
+            .join("")
+            .toLowerCase()
+    );
+
+    return words;
+}
+
 export function validPlay(
     board: Array<Array<BoardTile | null>>,
     enhancements: Enhancement[][],
@@ -191,18 +203,10 @@ export function validPlay(
         return false;
     }
 
-    const wordTiles = newWords(board, planned);
-
     const dict = getDictionary(dictionaryEnum);
 
-    const words = wordTiles.map((tiles) =>
-        tiles
-            .map((t) => t.letter)
-            .join("")
-            .toLowerCase()
-    );
+    const words = wordsFormed(board, planned);
 
-    console.log("all words", words);
     for (const word of words) {
         if (!dict.has(word)) {
             console.log("invalid word", word);
@@ -236,7 +240,7 @@ export function calculateScore(
     dictionaryEnum: DictionaryEnum
 ): Score {
     if (!validPlay(board, enhancements, dictionaryEnum)) {
-        return { points: -1, mana: -1 };
+        return { points: -1, mana: -1, wordsFormed: [] };
     }
 
     // Get all planned tiles (not finalized)
@@ -294,7 +298,7 @@ export function calculateScore(
                         wordMultiplier *= 3;
                         break;
                     case Enhancement.MANA:
-                        totalMana += 1;
+                        totalMana += 3;
                         break;
                     case Enhancement.DOUBLE_START:
                         wordMultiplier *= 2;
@@ -327,5 +331,6 @@ export function calculateScore(
     return {
         points: totalPoints,
         mana: totalMana,
+        wordsFormed: wordsFormed(board, planned),
     };
 }

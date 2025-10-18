@@ -3,24 +3,6 @@ import { LetterPoints } from "./misc";
 import { Spell, SpellData } from "./spells";
 import { Position, Tile } from "./tiles";
 
-export enum TurnType {
-    SPELL = "SPELL",
-    ACTION = "ACTION",
-}
-export interface Turn {
-    type: TurnType;
-}
-
-export interface SpellTurn extends Turn {
-    type: TurnType.SPELL;
-    spellData: SpellData;
-}
-
-export interface ActionTurn extends Turn {
-    type: TurnType.ACTION;
-    actionData: ActionData;
-}
-
 export type ServerPlayerMap = { [id: string]: ServerSidePlayer };
 export interface ServerSideGame {
     playerTurnOrder: string[]; // player turn goes in this order
@@ -72,8 +54,8 @@ export interface ClientSideGame {
 }
 
 export enum HistoryType {
-    ACTION = "ACTION",
-    SPELL = "SPELL",
+    ACTION,
+    SPELL,
 }
 
 export interface HistoryElement {
@@ -91,8 +73,8 @@ export interface SpellHistory extends HistoryElement {
 }
 
 export enum BoardTileType {
-    TILE = "tile",
-    BLOCKED = "blocked",
+    TILE,
+    BLOCKED,
 }
 
 export interface BoardTile {
@@ -119,7 +101,6 @@ export interface ClientSidePlayer {
 export interface Blocked {
     playerId: string;
     position: Position;
-    playerImage: string; // profile picture of the player who placed it
 }
 
 export enum Enhancement {
