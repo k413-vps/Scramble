@@ -249,7 +249,7 @@ export async function placeActionBoardUpdate(
     await redisClient.sendCommand(command);
 }
 
-export async function placeActionPlayerUpdate(
+export async function pointsManaPlayerUpdate(
     redisClient: RedisClientType,
     roomId: string,
     playerId: string,

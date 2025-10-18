@@ -22,7 +22,7 @@ export const useGameStore = create<
 
         placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => void;
         passAction: (action: PassAction, nextPlayerId: string) => void;
-        shuffleAction: (action: ShuffleAction, nextPlayerId: string) => void;
+        shuffleAction: (action: ShuffleAction, bagSize: number, nextPlayerId: string) => void;
         writeAction: (action: WriteAction, nextPlayerId: string) => void;
         sacrificeAction: (action: SacrificeAction, nextPlayerId: string) => void;
 
@@ -218,16 +218,26 @@ export const useGameStore = create<
     },
 
     passAction: (action: PassAction, nextPlayerId: string) => {
-        set((state) => ({ currentPlayerId: nextPlayerId }));
+        set((state) => ({ currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, action] }));
     },
-    shuffleAction: (action: ShuffleAction, nextPlayerId: string) => {
-        set((state) => ({ currentPlayerId: nextPlayerId }));
+    shuffleAction: (action: ShuffleAction, bagSize: number, nextPlayerId: string) => {
+        set((state) => ({
+            currentPlayerId: nextPlayerId,
+            turnHistory: [...state.turnHistory, action],
+            tilesRemaining: bagSize,
+        }));
     },
     writeAction: (action: WriteAction, nextPlayerId: string) => {
         set((state) => ({ currentPlayerId: nextPlayerId }));
     },
     sacrificeAction: (action: SacrificeAction, nextPlayerId: string) => {
-        set((state) => ({ currentPlayerId: nextPlayerId }));
+        set((state) => {
+            const players = { ...state.players };
+            players[state.currentPlayerId].points += action.points;
+            players[state.currentPlayerId].mana += action.mana;
+
+            return { players, currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, action] };
+        });
     },
 
     recallTiles: () => {

@@ -24,4 +24,8 @@ export interface HandlePlayReturn {
     nextPlayerId: string;
 }
 
-    
+export interface HandleShuffleReturn {
+    newHand: Tile[];
+    bagSize: number;
+    nextPlayerId: string;
+}

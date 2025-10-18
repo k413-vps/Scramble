@@ -92,7 +92,7 @@ export default function Page() {
     const handlePlay = (msg: ActionToClient) => {
         const actionData = msg.actionData as PlaceAction;
 
-        useGameStore.getState().placeAction(actionData, msg.bagSize, msg.nextPlayerId);
+        useGameStore.getState().placeAction(actionData, msg.bagSize!, msg.nextPlayerId);
     };
 
     const handlePass = (msg: ActionToClient) => {
@@ -102,7 +102,7 @@ export default function Page() {
 
     const handleShuffle = (msg: ActionToClient) => {
         const actionData = msg.actionData as ShuffleAction;
-        useGameStore.getState().shuffleAction(actionData, msg.nextPlayerId);
+        useGameStore.getState().shuffleAction(actionData, msg.bagSize!, msg.nextPlayerId);
     };
 
     const handleWrite = (msg: ActionToClient) => {

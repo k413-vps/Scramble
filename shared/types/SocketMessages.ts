@@ -38,7 +38,7 @@ export interface ActionToServer {
 
 export interface ActionToClient {
     actionData: ActionData;
-    bagSize: number;
+    bagSize?: number;
     nextPlayerId: string;
 }
 
