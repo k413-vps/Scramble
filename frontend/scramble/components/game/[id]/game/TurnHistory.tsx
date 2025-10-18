@@ -2,7 +2,7 @@ import { CSSProperties, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGameStore } from "@/utils/game/[id]/store";
-import { ActionHistory, ClientSidePlayer, HistoryType, SpellHistory, HistoryElement } from "shared/types/game";
+import { ActionHistory, ClientSidePlayer, HistoryType, SpellHistory } from "shared/types/game";
 import { getMessage } from "@/utils/game/[id]/History";
 import Image from "next/image";
 

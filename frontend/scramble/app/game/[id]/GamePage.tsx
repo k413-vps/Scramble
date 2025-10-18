@@ -18,7 +18,7 @@ import { Tile } from "shared/types/tiles";
 import Leaderboard from "@/components/game/[id]/game/Leaderboard";
 import { Socket } from "socket.io-client";
 import ActionsAndSpellsWindow from "@/components/game/[id]/game/ActionsAndSpellsWindow";
-import TurnHistory from "@/components/game/[id]/game/TurnHistory";
+// import TurnHistory from "@/components/game/[id]/game/TurnHistory";
 import GameInfo from "@/components/game/[id]/game/GameInfo";
 
 type GamePageProps = {

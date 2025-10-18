@@ -2,7 +2,7 @@ import { CSSProperties, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGameStore } from "@/utils/game/[id]/store";
-import { ActionHistory, ClientSidePlayer, HistoryType, SpellHistory, HistoryElement } from "shared/types/game";
+import { ActionHistory, ClientSidePlayer, HistoryType, SpellHistory } from "shared/types/game";
 import { getMessage } from "@/utils/game/[id]/History";
 import Image from "next/image";
 import { Socket } from "socket.io-client";
@@ -56,7 +56,7 @@ export default function GameInfo({ socket }: GameInfoProps) {
 
     const formatTime = (ms: number | null) => {
         if (ms === null) return "∞"; // Infinity sign for no timer
-        let cappedMS = Math.min(timePerTurn * 1000, ms);
+        const cappedMS = Math.min(timePerTurn * 1000, ms);
         const seconds = Math.floor(cappedMS / 1000);
         const mm = Math.floor(seconds / 60);
         const ss = seconds % 60;
