@@ -18,7 +18,7 @@ export default function DebugPage() {
                 <CardContent>
                     <div className="space-y-4">
                         <div>
-                            <Badge variant="secondary">Game Started</Badge>: {store.gameStarted ? "Yes" : "No"}
+                            {/* <Badge variant="secondary">Game Started</Badge>: {store.gameStartexxxxd ? "Yes" : "No"} */}
                         </div>
                         <div>
                             <Badge variant="secondary">Owner ID</Badge>:{" "}

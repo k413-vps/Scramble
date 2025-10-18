@@ -5,6 +5,7 @@ import {
     ClientSideGame,
     ClientSidePlayer,
     DictionaryEnum,
+    GameState,
     HistoryType,
 } from "shared/types/game";
 import { defaultPoints } from "shared/defaults/LetterPoints";
@@ -66,12 +67,13 @@ export const useGameStore = create<
     randomSeed: false,
     purchasedSpells: [],
     tilesRemaining: 0,
-    gameStarted: false,
+    gameState: GameState.LOBBY,
     ownerId: "",
+    lastToDrawId: "",
 
     startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number, timeOfLastTurn: number) => {
         set(() => ({
-            gameStarted: true,
+            gameState: GameState.IN_PROGRESS,
             playerTurnOrder: turnOrder,
             hand,
             currentPlayerId: turnOrder[0],

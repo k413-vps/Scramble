@@ -9,6 +9,7 @@ import {
     ServerPlayerMap,
     HistoryType,
     ActionHistory,
+    GameState,
 } from "shared/types/game";
 import { drawTiles } from "./GameLogic";
 import { Tile } from "shared/types/tiles";
@@ -212,14 +213,12 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
 
     const currentPlayerId = playerOrder[0];
 
-    const gameStarted = true;
-
     const timeOfLastTurn = Date.now() + 900; // slight buffer to account for delays
     const command = [
         "JSON.MSET",
         key,
-        "gameStarted",
-        JSON.stringify(gameStarted),
+        "gameState",
+        JSON.stringify(GameState.IN_PROGRESS),
         key,
         "currentPlayerId",
         JSON.stringify(currentPlayerId),

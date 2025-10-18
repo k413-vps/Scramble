@@ -6,7 +6,7 @@ import { api } from "@/lib/axios";
 import { useParams } from "next/navigation";
 
 import { GetGameResponse } from "shared/types/API";
-import { ClientSideGame } from "shared/types/game";
+import { ClientSideGame, GameState } from "shared/types/game";
 import LoadingPage from "@/components/LoadingPage";
 import { useEffect, useState } from "react";
 
@@ -36,7 +36,7 @@ export default function Page() {
     const params = useParams();
     const roomId = params.id;
 
-    const gameStarted = useGameStore((state) => state.gameStarted);
+    const gameState = useGameStore((state) => state.gameState);
 
     const players = useGameStore((state) => state.players);
 
@@ -211,7 +211,7 @@ export default function Page() {
         return <GameNotFoundPage />;
     }
 
-    if (gameStarted) {
+    if (gameState === GameState.IN_PROGRESS) {
         const userId = session?.user.id;
 
         const alreadyJoined = userId in players;

@@ -24,9 +24,10 @@ export function convertGame(game: ServerSideGame, userId: string): ClientSideGam
         randomSeed: game.randomSeed,
         purchasedSpells: game.players[userId]?.purchasedSpells || [],
         tilesRemaining: game.bag.length,
-        gameStarted: game.gameStarted,
+        gameState: game.gameState,
         ownerId: game.ownerId,
         playerTurnOrder: game.playerTurnOrder,
+        lastToDrawId: game.lastToDrawId,
     };
 
     return ans;
