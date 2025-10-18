@@ -1,5 +1,12 @@
 import { create } from "zustand";
-import { BoardTileType, ClientSideGame, ClientSidePlayer, DictionaryEnum } from "shared/types/game";
+import {
+    ActionHistory,
+    BoardTileType,
+    ClientSideGame,
+    ClientSidePlayer,
+    DictionaryEnum,
+    HistoryType,
+} from "shared/types/game";
 import { defaultPoints } from "shared/defaults/LetterPoints";
 import { Tile } from "shared/types/tiles";
 import { PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
@@ -204,11 +211,16 @@ export const useGameStore = create<
                 }
             }
 
+            const historyElement: ActionHistory = {
+                type: HistoryType.ACTION,
+                actionData: action,
+            };
+
             const output = {
                 board: newBoard,
                 tilesRemaining: bagSize,
                 currentPlayerId: nextPlayerId,
-                turnHistory: [...state.turnHistory, action],
+                turnHistory: [...state.turnHistory, historyElement],
                 players,
                 hand: newHand,
             };
@@ -218,14 +230,27 @@ export const useGameStore = create<
     },
 
     passAction: (action: PassAction, nextPlayerId: string) => {
-        set((state) => ({ currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, action] }));
+        set((state) => {
+            const historyElement: ActionHistory = {
+                type: HistoryType.ACTION,
+                actionData: action,
+            };
+
+            return { currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, historyElement] };
+        });
     },
     shuffleAction: (action: ShuffleAction, bagSize: number, nextPlayerId: string) => {
-        set((state) => ({
-            currentPlayerId: nextPlayerId,
-            turnHistory: [...state.turnHistory, action],
-            tilesRemaining: bagSize,
-        }));
+        set((state) => {
+            const historyElement: ActionHistory = {
+                type: HistoryType.ACTION,
+                actionData: action,
+            };
+            return {
+                currentPlayerId: nextPlayerId,
+                turnHistory: [...state.turnHistory, historyElement],
+                tilesRemaining: bagSize,
+            };
+        });
     },
     writeAction: (action: WriteAction, nextPlayerId: string) => {
         set((state) => ({ currentPlayerId: nextPlayerId }));
@@ -236,7 +261,12 @@ export const useGameStore = create<
             players[state.currentPlayerId].points += action.points;
             players[state.currentPlayerId].mana += action.mana;
 
-            return { players, currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, action] };
+            const historyElement: ActionHistory = {
+                type: HistoryType.ACTION,
+                actionData: action,
+            };
+
+            return { players, currentPlayerId: nextPlayerId, turnHistory: [...state.turnHistory, historyElement] };
         });
     },
 

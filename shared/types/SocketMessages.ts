@@ -1,5 +1,5 @@
 import { ActionData } from "./actions";
-import { ClientSidePlayer } from "./game";
+import { ActionHistory, ClientSidePlayer } from "./game";
 import { Tile } from "./tiles";
 
 export interface TestMessageToClient {
@@ -37,7 +37,7 @@ export interface ActionToServer {
 }
 
 export interface ActionToClient {
-    actionData: ActionData;
+    historyElement: ActionHistory
     bagSize?: number;
     nextPlayerId: string;
 }

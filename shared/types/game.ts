@@ -29,7 +29,7 @@ export interface ServerSideGame {
     enhancements: Enhancement[][];
     currentPlayerId: string;
     bag: string[];
-    turnHistory: ActionData[];
+    turnHistory: HistoryElement[];
     timePerTurn: number; // epoch time, 0 for unlimited
     timeOfLastTurn: number; // epoch time
     dictionary: DictionaryEnum;
@@ -53,7 +53,7 @@ export interface ClientSideGame {
     enhancements: Enhancement[][];
     currentPlayerId: string;
     hand: Tile[];
-    turnHistory: ActionData[];
+    turnHistory: HistoryElement[];
     timePerTurn: number; // epoch time, 0 for unlimited
     timeOfLastTurn: number; // epoch time
     dictionary: DictionaryEnum;
@@ -69,6 +69,25 @@ export interface ClientSideGame {
     tilesRemaining: number;
     gameStarted: boolean;
     ownerId: string;
+}
+
+export enum HistoryType {
+    ACTION = "ACTION",
+    SPELL = "SPELL",
+}
+
+export interface HistoryElement {
+    type: HistoryType;
+}
+
+export interface ActionHistory extends HistoryElement {
+    type: HistoryType.ACTION;
+    actionData: ActionData;
+}
+
+export interface SpellHistory extends HistoryElement {
+    type: HistoryType.SPELL;
+    spellData: SpellData;
 }
 
 export enum BoardTileType {

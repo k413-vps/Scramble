@@ -90,33 +90,34 @@ export default function Page() {
     };
 
     const handlePlay = (msg: ActionToClient) => {
-        const actionData = msg.actionData as PlaceAction;
+        const actionData = msg.historyElement.actionData as PlaceAction;
 
         useGameStore.getState().placeAction(actionData, msg.bagSize!, msg.nextPlayerId);
     };
 
     const handlePass = (msg: ActionToClient) => {
-        const actionData = msg.actionData as PassAction;
+        const actionData = msg.historyElement.actionData as PassAction;
         useGameStore.getState().passAction(actionData, msg.nextPlayerId);
     };
 
     const handleShuffle = (msg: ActionToClient) => {
-        const actionData = msg.actionData as ShuffleAction;
+        const actionData = msg.historyElement.actionData as ShuffleAction;
         useGameStore.getState().shuffleAction(actionData, msg.bagSize!, msg.nextPlayerId);
     };
 
     const handleWrite = (msg: ActionToClient) => {
-        const actionData = msg.actionData as WriteAction;
+        const actionData = msg.historyElement.actionData as WriteAction;
         useGameStore.getState().writeAction(actionData, msg.nextPlayerId);
     };
 
     const handleSacrifice = (msg: ActionToClient) => {
-        const actionData = msg.actionData as SacrificeAction;
+        const actionData = msg.historyElement.actionData as SacrificeAction;
         useGameStore.getState().sacrificeAction(actionData, msg.nextPlayerId);
     };
 
     const handleAction = (msg: ActionToClient) => {
-        const actionData = msg.actionData;
+        const actionData = msg.historyElement.actionData;
+
         switch (actionData.type) {
             case ActionType.PLAY:
                 handlePlay(msg);

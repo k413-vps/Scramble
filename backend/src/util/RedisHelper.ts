@@ -1,7 +1,15 @@
 import { createClient, RedisClientType } from "redis";
 import seedrandom from "seedrandom";
 import { shuffle } from "shared/functions/util";
-import { ServerSidePlayer, ServerSideGame, BoardTile, BoardTileType, ServerPlayerMap } from "shared/types/game";
+import {
+    ServerSidePlayer,
+    ServerSideGame,
+    BoardTile,
+    BoardTileType,
+    ServerPlayerMap,
+    HistoryType,
+    ActionHistory,
+} from "shared/types/game";
 import { drawTiles } from "./GameLogic";
 import { Tile } from "shared/types/tiles";
 import { LetterPoints } from "shared/types/misc";
@@ -264,7 +272,7 @@ export async function pointsManaPlayerUpdate(
     ]);
 }
 
-export async function updateTurnHistory(
+export async function updateTurnHistoryAction(
     redisClient: RedisClientType,
     roomId: string,
     actionData: ActionData
@@ -286,13 +294,32 @@ export async function updateTurnHistory(
     if (actionData.type == ActionType.PLAY) {
         const placeAction = actionData as PlaceAction;
         placeAction.hand = placeAction.hand.filter((tile) => tile.placed);
+
+        const historyElementPlay: ActionHistory = {
+            type: HistoryType.ACTION,
+            actionData: placeAction,
+        };
+
         await Promise.all([
-            redisClient.json.arrAppend(`games:${roomId}`, "turnHistory", JSON.parse(JSON.stringify(placeAction))),
+            redisClient.json.arrAppend(
+                `games:${roomId}`,
+                "turnHistory",
+                JSON.parse(JSON.stringify(historyElementPlay))
+            ),
             redisClient.json.set(`games:${roomId}`, "currentPlayerId", nextPlayerId),
         ]);
     } else {
+        const historyElementOther: ActionHistory = {
+            type: HistoryType.ACTION,
+            actionData: actionData,
+        };
+
         await Promise.all([
-            redisClient.json.arrAppend(`games:${roomId}`, "turnHistory", JSON.parse(JSON.stringify(actionData))),
+            redisClient.json.arrAppend(
+                `games:${roomId}`,
+                "turnHistory",
+                JSON.parse(JSON.stringify(historyElementOther))
+            ),
             redisClient.json.set(`games:${roomId}`, "currentPlayerId", nextPlayerId),
         ]);
     }

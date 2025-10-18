@@ -42,7 +42,7 @@ import {
 
 import { createRoom, getRoom, RedisSetup, checkPlayerExists, addPlayer, setOwner, startGame } from "./util/RedisHelper";
 import { parseCreateGameRequest } from "./util/APIParse";
-import { ServerSideGame, ServerSidePlayer, ClientSidePlayer } from "shared/types/game";
+import { ServerSideGame, ServerSidePlayer, ClientSidePlayer, ActionHistory, HistoryType } from "shared/types/game";
 import { convertGame, convertPlayer } from "./util/ServerClientTranslation";
 import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 import { handlePass, handlePlay, handleSacrifice, handleShuffle, handleWrite } from "./util/HandleActions";
@@ -304,7 +304,6 @@ async function main() {
             const actionData = msg.actionData;
             switch (actionData.type) {
                 case ActionType.PLAY:
-                    console.log("handling play action");
                     const { newHand, bagSize, nextPlayerId } = await handlePlay(
                         actionData as PlaceAction,
                         roomId,
@@ -322,8 +321,13 @@ async function main() {
                         mana: actionData.mana,
                     };
 
-                    const res: ActionToClient = {
+                    const historyElementPlay: ActionHistory = {
+                        type: HistoryType.ACTION,
                         actionData: newActionData,
+                    };
+
+                    const res: ActionToClient = {
+                        historyElement: historyElementPlay,
                         bagSize,
                         nextPlayerId,
                     };
@@ -340,8 +344,15 @@ async function main() {
                     break;
                 case ActionType.PASS:
                     const nextPlayerIdPass = await handlePass(actionData as PassAction, roomId, redisClient);
-                    const resPass: ActionToClient = {
+                    
+
+                    const historyElementPass: ActionHistory = {
+                        type: HistoryType.ACTION,
                         actionData: actionData,
+                    };
+
+                    const resPass: ActionToClient = {
+                        historyElement: historyElementPass,
                         nextPlayerId: nextPlayerIdPass,
                     };
 
@@ -351,8 +362,13 @@ async function main() {
                 case ActionType.SHUFFLE:
                     const { newHand: newHandShuffle, bagSize: bagSizeShuffle, nextPlayerId: nextPlayerIdShuffle } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
                     
-                    const resShuffle: ActionToClient = {
+                    const historyElementShuffle: ActionHistory = {
+                        type: HistoryType.ACTION,
                         actionData: actionData,
+                    };
+
+                    const resShuffle: ActionToClient = {
+                        historyElement: historyElementShuffle,
                         bagSize: bagSizeShuffle,
                         nextPlayerId: nextPlayerIdShuffle,
                     };
@@ -372,8 +388,14 @@ async function main() {
                     break;
                 case ActionType.SACRIFICE:
                     const nextPlayerIdSacrifice = await handleSacrifice(actionData as SacrificeAction, roomId, redisClient);
-                    const resSacrifice: ActionToClient = {
+
+                    const historyElementSacrifice: ActionHistory = {
+                        type: HistoryType.ACTION,
                         actionData: actionData,
+                    };
+
+                    const resSacrifice: ActionToClient = {
+                        historyElement: historyElementSacrifice,
                         nextPlayerId: nextPlayerIdSacrifice,
                     };
                     io.to(uniqueId).emit("action", resSacrifice);
