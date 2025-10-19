@@ -38,6 +38,8 @@ import {
     ActionToServer,
     ActionToClient,
     DrawTilesToClient,
+    LastDrawToClient,
+    GameOverToClient,
 } from "shared/types/SocketMessages";
 
 import {
@@ -49,6 +51,8 @@ import {
     setOwner,
     startGame,
     getCurrentPlayerId,
+    getLastToDrawId,
+    gameOver,
 } from "./util/RedisHelper";
 import { parseCreateGameRequest } from "./util/APIParse";
 import { ServerSideGame, ServerSidePlayer, ClientSidePlayer, ActionHistory, HistoryType } from "shared/types/game";
@@ -324,14 +328,17 @@ async function main() {
                     console.log(`User: ${userId}, action player: ${actionData.playerId}`);
                     return;
                 }
+                let bagEmptied = false;
 
                 switch (actionData.type) {
                     case ActionType.PLAY:
-                        const { newHand, bagSize, nextPlayerId, timeOfLastTurn } = await handlePlay(
+                        const { newHand, bagSize, nextPlayerId, timeOfLastTurn, emptiedBag } = await handlePlay(
                             actionData as PlaceAction,
                             roomId,
                             redisClient
                         );
+
+                        bagEmptied = emptiedBag;
 
                         // can't leak info about other players' hands!!
                         const placedTiles = (actionData as PlaceAction).hand.filter((t) => t.placed);
@@ -355,9 +362,17 @@ async function main() {
                             bagSize,
                             nextPlayerId,
                             timeOfLastTurn,
+                            emptiedBag,
                         };
 
                         io.to(uniqueId).emit("action", res);
+
+                        if (emptiedBag) {
+                            const lastDrawMsg: LastDrawToClient = {
+                                lastToDrawId: actionData.playerId,
+                            };
+                            io.to(uniqueId).emit("last_draw", lastDrawMsg);
+                        }
 
                         const newTilesRes: DrawTilesToClient = {
                             newHand,
@@ -368,7 +383,11 @@ async function main() {
 
                         break;
                     case ActionType.PASS:
-                        const { nextPlayerId: nextPlayerIdPass, timeOfLastTurn: timeOfLastTurnPass } = await handlePass(actionData as PassAction, roomId, redisClient);
+                        const { nextPlayerId: nextPlayerIdPass, timeOfLastTurn: timeOfLastTurnPass } = await handlePass(
+                            actionData as PassAction,
+                            roomId,
+                            redisClient
+                        );
 
                         const historyElementPass: ActionHistory = {
                             type: HistoryType.ACTION,
@@ -379,6 +398,7 @@ async function main() {
                             historyElement: historyElementPass,
                             nextPlayerId: nextPlayerIdPass,
                             timeOfLastTurn: timeOfLastTurnPass,
+                            emptiedBag: false,
                         };
 
                         io.to(uniqueId).emit("action", resPass);
@@ -390,7 +410,10 @@ async function main() {
                             bagSize: bagSizeShuffle,
                             nextPlayerId: nextPlayerIdShuffle,
                             timeOfLastTurn: timeOfLastTurnShuffle,
+                            emptiedBag: emptiedBagShuffle,
                         } = await handleShuffle(actionData as ShuffleAction, roomId, redisClient);
+
+                        bagEmptied = emptiedBagShuffle;
 
                         const historyElementShuffle: ActionHistory = {
                             type: HistoryType.ACTION,
@@ -402,9 +425,17 @@ async function main() {
                             bagSize: bagSizeShuffle,
                             nextPlayerId: nextPlayerIdShuffle,
                             timeOfLastTurn: timeOfLastTurnShuffle,
+                            emptiedBag: emptiedBagShuffle,
                         };
 
                         io.to(uniqueId).emit("action", resShuffle);
+
+                        if (emptiedBagShuffle) {
+                            const lastDrawMsg: LastDrawToClient = {
+                                lastToDrawId: actionData.playerId,
+                            };
+                            io.to(uniqueId).emit("last_draw", lastDrawMsg);
+                        }
 
                         const newTilesResShuffle: DrawTilesToClient = {
                             newHand: newHandShuffle,
@@ -418,11 +449,8 @@ async function main() {
                         handleWrite(actionData as WriteAction, roomId, redisClient);
                         break;
                     case ActionType.SACRIFICE:
-                        const { nextPlayerId: nextPlayerIdSacrifice, timeOfLastTurn: timeOfLastTurnSacrifice } = await handleSacrifice(
-                            actionData as SacrificeAction,
-                            roomId,
-                            redisClient
-                        );
+                        const { nextPlayerId: nextPlayerIdSacrifice, timeOfLastTurn: timeOfLastTurnSacrifice } =
+                            await handleSacrifice(actionData as SacrificeAction, roomId, redisClient);
 
                         const historyElementSacrifice: ActionHistory = {
                             type: HistoryType.ACTION,
@@ -433,12 +461,20 @@ async function main() {
                             historyElement: historyElementSacrifice,
                             nextPlayerId: nextPlayerIdSacrifice,
                             timeOfLastTurn: timeOfLastTurnSacrifice,
+                            emptiedBag: false,
                         };
                         io.to(uniqueId).emit("action", resSacrifice);
 
                         break;
                     default:
                         console.error(`Unknown action type: ${actionData.type}`);
+                }
+
+                const lastToDrawId = await getLastToDrawId(roomId, redisClient);
+                if (!bagEmptied && lastToDrawId === actionData.playerId) {
+                    const gameOverMsg: GameOverToClient = {};
+                    await gameOver(roomId, redisClient);
+                    io.to(uniqueId).emit("game_over", gameOverMsg);
                 }
             });
         });

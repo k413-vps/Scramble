@@ -70,7 +70,8 @@ export default function TileRack() {
                 </AnimatePresence>
                 {tiles.map((tile, index) => (
                     <motion.div
-                        key={tile.position ? `tile-${index}` : `tile-${tile.id}`}
+                    // i believe the key needs to be different to reanimate on recall
+                        key={tile.position ? `tile-ind-${index}` : `tile-${tile.id}`}
                         layout
                         initial={
                             !rendered[tile.id]

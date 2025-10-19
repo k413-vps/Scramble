@@ -10,8 +10,9 @@ import {
 } from "shared/types/game";
 import { defaultPoints } from "shared/defaults/LetterPoints";
 import { Tile } from "shared/types/tiles";
-import { PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
+import { ActionData, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 import { validPlay } from "./gameLogic";
+import { ActionToClient } from "shared/types/SocketMessages";
 
 export const useGameStore = create<
     ClientSideGame & {
@@ -27,6 +28,7 @@ export const useGameStore = create<
         setPlayerId: (playerId: string) => void;
         drawTiles: (newHand: Tile[], bagSize: number) => void;
         setTimeOfLastTurn: (time: number) => void;
+        setLastToDrawId: (lastToDrawId: string) => void;
 
         placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => void;
         passAction: (action: PassAction, nextPlayerId: string) => void;
@@ -36,6 +38,8 @@ export const useGameStore = create<
 
         shuffleRecall: () => void;
         recallTiles: () => void;
+
+        gameOver: () => void;
 
         // getters
         getCurrentPlayer: () => ClientSidePlayer | null;
@@ -147,9 +151,6 @@ export const useGameStore = create<
             const handTile = state.hand[index];
             const newHand = [...state.hand];
 
-            console.log(handTile, "hand tile");
-            console.log(fromTile, "from tile");
-
             if (handTile.position) {
                 for (let i = 0; i < newHand.length; i++) {
                     if (newHand[i].id == (fromTile!.tile as Tile).id) {
@@ -192,6 +193,12 @@ export const useGameStore = create<
     setTimeOfLastTurn: (time: number) => {
         set(() => ({
             timeOfLastTurn: time,
+        }));
+    },
+
+    setLastToDrawId: (lastToDrawId: string) => {
+        set(() => ({
+            lastToDrawId,
         }));
     },
 
@@ -293,6 +300,12 @@ export const useGameStore = create<
             }
             return { board: newBoard, hand: newHand };
         });
+    },
+
+    gameOver: () => {
+        set(() => ({
+            gameState: GameState.COMPLETED,
+        }));
     },
 
     shuffleRecall: () => {

@@ -38,13 +38,20 @@ export interface ActionToServer {
 }
 
 export interface ActionToClient {
-    historyElement: ActionHistory
+    historyElement: ActionHistory;
     bagSize?: number;
     nextPlayerId: string;
     timeOfLastTurn: number;
+    emptiedBag: boolean;
 }
 
 export interface DrawTilesToClient {
     newHand: Tile[];
     bagSize: number;
 }
+
+export interface LastDrawToClient {
+    lastToDrawId: string;
+}
+
+export interface GameOverToClient {}

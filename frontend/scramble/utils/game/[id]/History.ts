@@ -27,7 +27,6 @@ export function getMessage(players: ClientPlayerMap, history?: HistoryElement): 
     if (history === undefined) {
         return undefined
     }
-    console.log("how am i not undefined", history, history === undefined);
 
     if (history.type === HistoryType.ACTION) {
         return getMessageAction((history as ActionHistory).actionData, players);
@@ -38,7 +37,7 @@ export function getMessage(players: ClientPlayerMap, history?: HistoryElement): 
     return "mysterious history element";
 }
 
-function getMessageAction(actionData: ActionData, players: ClientPlayerMap): string {
+export function getMessageAction(actionData: ActionData, players: ClientPlayerMap): string {
     const name = players[actionData.playerId]?.name;
     if (actionData.type === ActionType.PLAY) {
         return getMessageActionPlay(actionData as PlaceAction, name);

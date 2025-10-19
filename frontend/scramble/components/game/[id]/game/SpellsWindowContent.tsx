@@ -7,8 +7,6 @@ export default function SpellsWindowContent() {
 
     const mana = player === null ? -1 : player.mana;
 
-    console.log("spells", spells, SpellType.PAINTBRUSH);
-
     return (
         <div
             style={{

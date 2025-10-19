@@ -15,7 +15,6 @@ export default function Leaderboard() {
     const width = 300;
     const height = 410;
 
-    console.log("turnOrder is", turnOrder);
 
     return (
         <Rnd

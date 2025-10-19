@@ -11,7 +11,6 @@ type ActionWindowContentProps = {
 };
 
 export default function ActionWindowContent({ socket }: ActionWindowContentProps) {
-    const player = useGameStore((state) => state.getPlayer());
     const playerId = useGameStore((state) => state.playerId);
     const currentPlayerId = useGameStore((state) => state.currentPlayerId);
 
@@ -22,10 +21,7 @@ export default function ActionWindowContent({ socket }: ActionWindowContentProps
 
     const shuffleRecall = useGameStore((state) => state.shuffleRecall);
 
-    console.log("please help why is it crashing");
-    console.log("player", player);
-    console.log("playerId", playerId);
-    console.log("currentPlayerId", currentPlayerId);
+
     // const mana = player!.mana;
 
     const board = useGameStore((state) => state.board);

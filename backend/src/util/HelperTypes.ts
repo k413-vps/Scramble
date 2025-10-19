@@ -24,6 +24,7 @@ export interface HandlePlayReturn {
     bagSize: number;
     nextPlayerId: string;
     timeOfLastTurn: number;
+    emptiedBag: boolean;
 }
 
 export interface HandlePassReturn {
@@ -35,6 +36,7 @@ export interface HandleShuffleReturn {
     bagSize: number;
     nextPlayerId: string;
     timeOfLastTurn: number;
+    emptiedBag: boolean;
 }
 
 export interface HandleSacrificeReturn {
