@@ -27,7 +27,7 @@ export const letterLeagueShortFrequency: LetterCount = {
     X: 0,
     Y: 1,
     Z: 0,
-    _: 0, // 1,
+    _: 1,
 };
 
 export const letterLeagueMediumFrequency: LetterCount = {
@@ -57,7 +57,7 @@ export const letterLeagueMediumFrequency: LetterCount = {
     X: 1,
     Y: 2,
     Z: 1,
-    _: 0, //2,
+    _: 2,
 };
 
 export const letterLeagueLongFrequency: LetterCount = {
@@ -87,5 +87,5 @@ export const letterLeagueLongFrequency: LetterCount = {
     X: 2,
     Y: 4,
     Z: 2,
-    _: 0, // 4,
+    _: 4,
 };

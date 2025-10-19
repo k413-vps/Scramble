@@ -186,6 +186,7 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTi
                             placed: false,
                             enchantment: Enchantment.BASE,
                             id: -1,
+                            blank: false,
                         }}
                         size={60}
                     />

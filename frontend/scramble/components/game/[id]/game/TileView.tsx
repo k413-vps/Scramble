@@ -90,6 +90,7 @@ export default function TileView({ tile, size = 48, index = null }: TileViewProp
                     left: "50%",
                     transform: "translate(-50%, -50%)",
                     fontSize: size * 0.6,
+                    textDecoration: tile.blank ? "underline" : "none", // Underline if blank is true
                 }}
             >
                 {tile.letter}

@@ -8,6 +8,8 @@ export interface Tile {
 
     enchantment: Enchantment; // enchantment is chosen when drawn by the player to account for Hone
     id: number; // unique id used literally just for animations
+    
+    blank: boolean; 
 }
 
 export enum Enchantment {
