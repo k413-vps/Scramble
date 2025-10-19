@@ -63,7 +63,6 @@ export default function LobbyPage({ userId, socket }: LobbyPageProps) {
                     <h3>Special Actions: {gameState.enableSpecialActions ? "Enabled" : "Disabled"}</h3>
                     <h3>Random Seed: {gameState.randomSeed ? "Yes" : "No"}</h3>
                     <h3>Seed: {gameState.seed}</h3>
-                    <h3>Status: {gameState.gameStarted ? "In Progress" : "Waiting to Start"}</h3>
                 </CardContent>
             </Card>
 

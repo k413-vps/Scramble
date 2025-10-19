@@ -9,6 +9,7 @@ import {
     ServerPlayerMap,
     HistoryType,
     ActionHistory,
+    GameState,
 } from "shared/types/game";
 import { drawTiles } from "./GameLogic";
 import { Tile } from "shared/types/tiles";
@@ -101,6 +102,25 @@ export async function getCurrentPlayerId(roomId: string, redisClient: RedisClien
     return result;
 }
 
+export async function getLastToDrawId(roomId: string, redisClient: RedisClientType): Promise<string> {
+    const key = `games:${roomId}`;
+
+    const result = JSON.parse((await redisClient.sendCommand(["JSON.GET", key, "lastToDrawId"])) as unknown as string);
+
+    return result;
+}
+
+export async function setLastToDrawId(roomId: string, playerId: string, redisClient: RedisClientType): Promise<void> {
+    const key = `games:${roomId}`;
+    await redisClient.json.set(key, "lastToDrawId", playerId);
+}
+
+export async function gameOver(roomId: string, redisClient: RedisClientType): Promise<void> {
+    const key = `games:${roomId}`;
+    await redisClient.json.set(key, "gameState", GameState.COMPLETED);
+}
+
+
 export async function checkPlayerExists(
     redisClient: RedisClientType,
     userId: string,
@@ -114,6 +134,18 @@ export async function checkPlayerExists(
     const res = (await redisClient.sendCommand(["JSON.TYPE", key, path])) as unknown as string;
 
     return res !== null;
+}
+
+export async function getBagLength(roomId: string, redisClient: RedisClientType): Promise<number> {
+    const key = `games:${roomId}`;
+
+    const result = (await redisClient.json.arrLen(key, {
+        path: "bag",
+    })) as number;
+
+    console.log("bag length", result);
+
+    return result;
 }
 
 export async function addPlayer(
@@ -212,14 +244,12 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
 
     const currentPlayerId = playerOrder[0];
 
-    const gameStarted = true;
-
     const timeOfLastTurn = Date.now() + 900; // slight buffer to account for delays
     const command = [
         "JSON.MSET",
         key,
-        "gameStarted",
-        JSON.stringify(gameStarted),
+        "gameState",
+        JSON.stringify(GameState.IN_PROGRESS),
         key,
         "currentPlayerId",
         JSON.stringify(currentPlayerId),

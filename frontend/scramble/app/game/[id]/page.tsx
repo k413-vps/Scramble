@@ -6,7 +6,7 @@ import { api } from "@/lib/axios";
 import { useParams } from "next/navigation";
 
 import { GetGameResponse } from "shared/types/API";
-import { ClientSideGame } from "shared/types/game";
+import { ClientSideGame, GameState } from "shared/types/game";
 import LoadingPage from "@/components/LoadingPage";
 import { useEffect, useState } from "react";
 
@@ -23,10 +23,13 @@ import {
     DrawTilesToClient,
     JoinToClient,
     JoinToServer,
+    LastDrawToClient,
     StartToClient,
+    GameOverToClient,
 } from "shared/types/SocketMessages";
 import GamePage from "./GamePage";
 import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
+import CompletedPage from "./CompletedPage";
 
 let socket: Socket;
 
@@ -36,13 +39,17 @@ export default function Page() {
     const params = useParams();
     const roomId = params.id;
 
-    const gameStarted = useGameStore((state) => state.gameStarted);
+    const gameState = useGameStore((state) => state.gameState);
 
     const players = useGameStore((state) => state.players);
 
     const setPlayerId = useGameStore((state) => state.setPlayerId);
 
     const setTimeOfLastTurn = useGameStore((state) => state.setTimeOfLastTurn);
+
+    const setLastToDrawId = useGameStore((state) => state.setLastToDrawId);
+
+    const gameOver = useGameStore((state) => state.gameOver);
 
     const [socketConnected, setSocketConnected] = useState(false);
 
@@ -138,12 +145,24 @@ export default function Page() {
                 break;
         }
 
-
         setTimeOfLastTurn(msg.timeOfLastTurn);
+        console.log("emptiedBag", msg.emptiedBag);
+        console.log("last to draw", useGameStore.getState().lastToDrawId);
+    };
+
+    const handleLastDraw = (msg: LastDrawToClient) => {
+        console.log("last draw msg", msg, msg.lastToDrawId);
+        setLastToDrawId(msg.lastToDrawId);
     };
 
     const handleDrawTiles = (msg: DrawTilesToClient) => {
         useGameStore.getState().drawTiles(msg.newHand, msg.bagSize);
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const handleGameOver = (msg: GameOverToClient) => {
+        gameOver();
+        console.log("game over received");
     };
 
     useEffect(() => {
@@ -172,6 +191,8 @@ export default function Page() {
             socket.on("start_game", handleStart);
             socket.on("action", handleAction);
             socket.on("draw_tiles", handleDrawTiles);
+            socket.on("last_draw", handleLastDraw);
+            socket.on("game_over", handleGameOver);
 
             setPlayerId(session!.user.id);
         } else if (!authPending) {
@@ -200,7 +221,9 @@ export default function Page() {
         "socket?.active",
         socket?.active,
         "!socketConnected",
-        !socketConnected
+        !socketConnected,
+        "gameState",
+        gameState
     );
 
     if (getGameLoading || authPending || !session?.user?.id || !socketConnected) {
@@ -211,12 +234,11 @@ export default function Page() {
         return <GameNotFoundPage />;
     }
 
-    if (gameStarted) {
+    if (gameState === GameState.IN_PROGRESS) {
         const userId = session?.user.id;
 
         const alreadyJoined = userId in players;
-        console.log("alreadyJoined", alreadyJoined);
-        console.log("players", players);
+
         if (!alreadyJoined) {
             return <LoadingPage />;
         }
@@ -229,7 +251,11 @@ export default function Page() {
             socket.emit("join_game", socketMessage);
         }
         return <GamePage socket={socket} />;
+    } else if (gameState === GameState.LOBBY) {
+        return <LobbyPage userId={session.user.id} socket={socket} />;
+    } else if (gameState === GameState.COMPLETED) {
+        return <CompletedPage />;
     }
 
-    return <LobbyPage userId={session.user.id} socket={socket} />;
+    return <div>how the fuck are you reading this </div>;
 }

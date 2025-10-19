@@ -1,6 +1,6 @@
 import { generateSeed, shuffle } from "shared/functions/util";
 import { CreateGameRequest } from "shared/types/API";
-import { Enhancement, ServerSideGame } from "shared/types/game";
+import { Enhancement, GameState, ServerSideGame } from "shared/types/game";
 import seedrandom from "seedrandom";
 
 const M_RATE = 0.2;
@@ -47,8 +47,9 @@ export function parseCreateGameRequest(data: CreateGameRequest): ServerSideGame 
         handSize: data.handSize,
         seed: seed,
         randomSeed: data.seed == "",
-        gameStarted: false,
+        gameState: GameState.LOBBY,
         ownerId: "",
+        lastToDrawId: "",
     };
 
     return ans;

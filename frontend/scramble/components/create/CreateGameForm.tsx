@@ -27,7 +27,7 @@ export function CreateGameForm() {
         defaultValues: {
             handSize: 7,
             board: "letter league",
-            length: "medium",
+            length: "short",
             dictionary: DictionaryEnum.twl06,
             wildMode: true,
             enableEnchantments: true,
@@ -139,7 +139,7 @@ export function CreateGameForm() {
                     render={({ field }) => (
                         <FormItem>
                             <Label>Choose length</Label>
-                            <Select onValueChange={field.onChange} defaultValue="medium">
+                            <Select onValueChange={field.onChange} defaultValue="short">
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue />

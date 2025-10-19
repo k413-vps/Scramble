@@ -105,10 +105,6 @@ function getEnchancementLetter(enhancement: Enhancement, size: number) {
 const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTileProps) => {
     const size = 64;
 
-    if (cell) {
-        console.log("cell type", cell.type);
-        console.log(BoardTileType.TILE, "enum type");
-    }
 
     const dropData: DropDataBoard = {
         dropType: DropTypes.BOARD,

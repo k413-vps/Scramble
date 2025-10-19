@@ -4,6 +4,12 @@ import { Spell, SpellData } from "./spells";
 import { Position, Tile } from "./tiles";
 
 export type ServerPlayerMap = { [id: string]: ServerSidePlayer };
+
+export enum GameState {
+    LOBBY,
+    IN_PROGRESS,
+    COMPLETED,
+}
 export interface ServerSideGame {
     playerTurnOrder: string[]; // player turn goes in this order
     players: ServerPlayerMap;
@@ -23,8 +29,9 @@ export interface ServerSideGame {
     handSize: number;
     seed: number;
     randomSeed: boolean;
-    gameStarted: boolean;
+    gameState: GameState;
     ownerId: string;
+    lastToDrawId: string;
 }
 
 export type ClientPlayerMap = { [id: string]: ClientSidePlayer };
@@ -49,8 +56,9 @@ export interface ClientSideGame {
     randomSeed: boolean;
     purchasedSpells: Array<Spell>; // one time spells only
     tilesRemaining: number;
-    gameStarted: boolean;
+    gameState: GameState;
     ownerId: string;
+    lastToDrawId: string;
 }
 
 export enum HistoryType {
