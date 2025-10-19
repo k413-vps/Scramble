@@ -385,6 +385,7 @@ async function main() {
                             points: actionData.points,
                             mana: actionData.mana,
                             wordsFormed: (actionData as PlaceAction).wordsFormed,
+                            idToPoints: (actionData as PlaceAction).idToPoints,
                         };
 
                         const historyElementPlay: ActionHistory = {

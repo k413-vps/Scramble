@@ -36,7 +36,12 @@ export const useGameStore = create<
         setTimeOfLastTurn: (time: number) => void;
         setLastToDrawId: (lastToDrawId: string) => void;
 
-        placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => void;
+        placeAction: (
+            action: PlaceAction,
+            bagSize: number,
+            idToPoints: Record<string, number>,
+            nextPlayerId: string
+        ) => void;
         passAction: (action: PassAction, nextPlayerId: string) => void;
         shuffleAction: (action: ShuffleAction, bagSize: number, nextPlayerId: string) => void;
         writeAction: (action: WriteAction, nextPlayerId: string) => void;
@@ -216,7 +221,7 @@ export const useGameStore = create<
         }));
     },
 
-    placeAction: (action: PlaceAction, bagSize: number, nextPlayerId: string) => {
+    placeAction: (action: PlaceAction, bagSize: number, idToPoints: Record<string, number>, nextPlayerId: string) => {
         set((state) => {
             const placedTiles = action.hand;
             const newBoard = state.board.map((r) => r.slice());
@@ -238,6 +243,22 @@ export const useGameStore = create<
                         newHand[i].position?.col === col
                     ) {
                         newHand[i].position = null;
+                    }
+                }
+            }
+
+            for (let row = 0; row < newBoard.length; row++) {
+                for (let col = 0; col < newBoard[row].length; col++) {
+                    const boardTile = newBoard[row][col];
+                    if (boardTile && boardTile.type === BoardTileType.TILE && idToPoints[(boardTile.tile as Tile).id]) {
+                        const assignedPoints = idToPoints[(boardTile.tile as Tile).id];
+                        // (boardTile.tile as Tile).points = assignedPoints;
+                        // console.log("Assigned points", assignedPoints, "to tile", (boardTile.tile as Tile).id);
+                        const deepCopy = { ...(boardTile.tile as Tile) };
+                        deepCopy.points = assignedPoints;
+
+                        // needs to replace with a deep copy to trigger re-render
+                        newBoard[row][col] = { type: BoardTileType.TILE, tile: deepCopy };
                     }
                 }
             }

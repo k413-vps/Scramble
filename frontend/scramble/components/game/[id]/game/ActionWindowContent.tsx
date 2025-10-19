@@ -21,13 +21,14 @@ export default function ActionWindowContent({ socket }: ActionWindowContentProps
 
     const shuffleRecall = useGameStore((state) => state.shuffleRecall);
 
-
     // const mana = player!.mana;
 
     const board = useGameStore((state) => state.board);
     const enhancements = useGameStore((state) => state.enhancements);
     const dictionary = useGameStore((state) => state.dictionary);
-    const { points, mana: manaGain, wordsFormed } = calculateScore(board, enhancements, dictionary);
+    const wildMode = useGameStore((state) => state.wildMode);
+
+    const { points, mana: manaGain, wordsFormed, idToPoints } = calculateScore(board, enhancements, dictionary);
 
     return (
         <div
@@ -46,7 +47,9 @@ export default function ActionWindowContent({ socket }: ActionWindowContentProps
             <div>
                 <ActionsEntry
                     action={actions[ActionType.PLAY]}
-                    onClick={() => handlePlay(socket, hand, playerId, points, manaGain, wordsFormed)}
+                    onClick={() =>
+                        handlePlay(socket, hand, playerId, points, manaGain, wordsFormed, wildMode ? idToPoints : {})
+                    }
                     disabled={!isCurrentPlayer || !isValidPlay}
                 >
                     {isValidPlay && <ScorePill points={points} mana={manaGain} />}

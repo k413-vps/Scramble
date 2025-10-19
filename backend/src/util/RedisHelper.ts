@@ -293,8 +293,17 @@ export async function startGame(redisClient: RedisClientType, roomId: string): P
 export async function placeActionBoardUpdate(
     redisClient: RedisClientType,
     roomId: string,
-    hand: Tile[]
+    hand: Tile[],
+    idToPoints: Record<string, number>
 ): Promise<void> {
+    if (Object.keys(idToPoints).length > 0) {
+        await placeActionWildBoardUpdate(redisClient, roomId, hand, idToPoints);
+    } else {
+        await placeActionNormalBoardUpdate(redisClient, roomId, hand);
+    }
+}
+
+async function placeActionNormalBoardUpdate(redisClient: RedisClientType, roomId: string, hand: Tile[]): Promise<void> {
     const key = `games:${roomId}`;
 
     const plannedTiles = hand.filter((tile) => tile.position !== null);
@@ -318,6 +327,43 @@ export async function placeActionBoardUpdate(
     await redisClient.sendCommand(command);
 }
 
+async function placeActionWildBoardUpdate(
+    redisClient: RedisClientType,
+    roomId: string,
+    hand: Tile[],
+    idToPoints: Record<string, number>
+): Promise<void> {
+    const key = `games:${roomId}`;
+    const plannedTiles = hand.filter((tile) => tile.position !== null);
+
+    const board = (await redisClient.sendCommand(["JSON.GET", key, "board"])) as unknown as string;
+
+    const boardArray: Array<Array<BoardTile | null>> = JSON.parse(board);
+
+    for (const tile of plannedTiles) {
+        const pos = tile.position!;
+        tile.placed = true;
+
+        const boardTile: BoardTile = {
+            type: BoardTileType.TILE,
+            tile: tile,
+        };
+
+        boardArray[pos.row][pos.col] = boardTile;
+    }
+
+    for (let row = 0; row < boardArray.length; row++) {
+        for (let col = 0; col < boardArray[row].length; col++) {
+            const boardTile = boardArray[row][col];
+            if (boardTile && boardTile.type === BoardTileType.TILE && idToPoints[(boardTile.tile as Tile).id]) {
+                const assignedPoints = idToPoints[(boardTile.tile as Tile).id];
+                (boardTile.tile as Tile).points = assignedPoints;
+            }
+        }
+    }
+
+    await redisClient.sendCommand(["JSON.SET", key, "board", JSON.stringify(boardArray)]);
+}
 export async function pointsManaPlayerUpdate(
     redisClient: RedisClientType,
     roomId: string,

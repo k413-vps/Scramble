@@ -1,7 +1,7 @@
 import { BoardTile, BoardTileType, Dictionary, DictionaryEnum, Enhancement } from "shared/types/game";
 import { Enchantment, Position, Tile } from "shared/types/tiles";
 import { getDictionary } from "shared/defaults/wordlists/dictionaries";
-import { Score } from "./HelperTypes";
+import { CalculateScoreReturn } from "./HelperTypes";
 
 // get all the tiles that are not placed yet
 function plannedTiles(board: Array<Array<BoardTile | null>>): Tile[] {
@@ -238,9 +238,9 @@ export function calculateScore(
     board: Array<Array<BoardTile | null>>,
     enhancements: Enhancement[][],
     dictionaryEnum: DictionaryEnum
-): Score {
+): CalculateScoreReturn {
     if (!validPlay(board, enhancements, dictionaryEnum)) {
-        return { points: -1, mana: -1, wordsFormed: [] };
+        return { points: -1, mana: -1, wordsFormed: [], idToPoints: {} };
     }
 
     // Get all planned tiles (not finalized)
@@ -322,7 +322,6 @@ export function calculateScore(
     }
 
     for (const word of words) {
-        const wordStr = word.map((t) => t.letter).join("");
         const wordScore = word.reduce((sum, tile) => sum + idToPoints[tile.id], 0);
         console.log("word score", word, wordScore);
         totalPoints += wordScore;
@@ -332,6 +331,7 @@ export function calculateScore(
         points: totalPoints,
         mana: totalMana,
         wordsFormed: wordsFormed(board, planned),
+        idToPoints,
     };
 }
 

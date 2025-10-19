@@ -9,7 +9,8 @@ export function handlePlay(
     currentPlayerId: string,
     points: number,
     manaGain: number,
-    wordsFormed: string[]
+    wordsFormed: string[],
+    idToPoints: Record<string, number>
 ) {
     const actionData: PlaceAction = {
         type: ActionType.PLAY,
@@ -18,6 +19,7 @@ export function handlePlay(
         points: points,
         mana: manaGain,
         wordsFormed: wordsFormed,
+        idToPoints: idToPoints,
     };
 
     const message: ActionToServer = {
