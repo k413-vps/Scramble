@@ -28,8 +28,8 @@ export const useGameStore = create<
         ) => void;
         startGame: (turnOrder: string[], hand: Tile[], tilesRemaining: number, timeOfLastTurn: number) => void;
         handToHand: (index1: number, index2: number) => void;
-        handToBoard: (row: number, col: number, index: number) => void;
-        boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
+        handToBoard: (row: number, col: number, index: number, letter: string) => void;
+        boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number, letter: string) => void;
         boardToHand: (fromRow: number, fromCol: number, index: number) => void;
         setPlayerId: (playerId: string) => void;
         drawTiles: (newHand: Tile[], bagSize: number) => void;
@@ -138,28 +138,39 @@ export const useGameStore = create<
     },
 
     // can't place on occupied cell
-    handToBoard: (row: number, col: number, index: number) => {
+    handToBoard: (row: number, col: number, index: number, letter: string) => {
         set((state) => {
             const newBoard = state.board.map((r) => r.slice());
-            newBoard[row][col] = { type: BoardTileType.TILE, tile: state.hand[index] };
+            newBoard[row][col] = { type: BoardTileType.TILE, tile: { ...state.hand[index], letter } };
             const newHand = [...state.hand];
             newHand[index].position = { row, col };
+            newHand[index].letter = letter;
+            newBoard[row][col].tile!.position = { row, col };
 
             return { board: newBoard, hand: newHand };
         });
     },
 
     // can't place on occupied cell
-    boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number) => {
+    boardToBoard: (fromRow: number, fromCol: number, toRow: number, toCol: number, letter: string) => {
         set((state) => {
             const newBoard = state.board.map((r) => r.slice());
             const fromTile = newBoard[fromRow][fromCol];
             newBoard[toRow][toCol] = fromTile;
             fromTile!.tile!.position = { row: toRow, col: toCol };
+            (fromTile!.tile! as Tile).letter = letter;
 
             newBoard[fromRow][fromCol] = null;
 
-            return { board: newBoard };
+            const newHand = [...state.hand];
+            for (let i = 0; i < newHand.length; i++) {
+                if (newHand[i].id == (fromTile!.tile as Tile).id) {
+                    newHand[i].position = { row: toRow, col: toCol };
+                    newHand[i].letter = letter;
+                }
+            }
+
+            return { board: newBoard, hand: newHand };
         });
     },
 
@@ -179,6 +190,7 @@ export const useGameStore = create<
                 }
                 newHand[index] = fromTile!.tile as Tile;
                 newHand[index].position = null;
+                newHand[index].letter = (fromTile!.tile! as Tile).blank ? "_" : (fromTile!.tile! as Tile).letter;
                 newBoard[fromRow][fromCol] = null;
             } else {
                 for (let i = 0; i < newHand.length; i++) {
@@ -190,6 +202,7 @@ export const useGameStore = create<
 
                 newHand.splice(index, 0, fromTile!.tile as Tile);
                 newHand[index].position = null;
+                newHand[index].letter = (fromTile!.tile! as Tile).blank ? "_" : (fromTile!.tile! as Tile).letter;
                 newBoard[fromRow][fromCol] = null;
             }
             return { board: newBoard, hand: newHand };
