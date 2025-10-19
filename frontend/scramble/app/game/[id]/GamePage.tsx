@@ -114,6 +114,7 @@ export default function GamePage({ socket }: GamePageProps) {
             },
         };
 
+        setBlankTileLetter("");
         dragTileDropBoardLogic(dialog.dropData as DropDataBoard, newDragData);
         setDialog({ open: false, dragData: null, dropData: null });
     }
@@ -136,7 +137,7 @@ export default function GamePage({ socket }: GamePageProps) {
         const dragTile = dragData.tile;
 
         if (dragData.dragIndex === null) {
-            boardToBoard(dragTile.position!.row, dragTile.position!.col, dropData.rowNum, dropData.colNum);
+            boardToBoard(dragTile.position!.row, dragTile.position!.col, dropData.rowNum, dropData.colNum, dragTile.letter);
 
             if (isCurrentPlayer) {
                 const plannedTilesMsg: PlannedToClient = {
@@ -147,7 +148,7 @@ export default function GamePage({ socket }: GamePageProps) {
             }
             return;
         }
-        handToBoard(dropData.rowNum, dropData.colNum, dragData.dragIndex);
+        handToBoard(dropData.rowNum, dropData.colNum, dragData.dragIndex, dragTile.letter);
 
         const plannedTilesMsg: PlannedToClient = {
             plannedTiles: myPlannedTiles(hand),
