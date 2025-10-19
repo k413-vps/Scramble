@@ -55,6 +55,7 @@ export interface PlaceAction extends ActionData {
     type: ActionType.PLAY;
     hand: Tile[];
     wordsFormed: string[];
+    idToPoints: Record<string, number>;
 }
 
 export interface PassAction extends ActionData {

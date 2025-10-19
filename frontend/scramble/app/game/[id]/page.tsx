@@ -108,7 +108,8 @@ export default function Page() {
     const handlePlay = (msg: ActionToClient) => {
         const actionData = msg.historyElement.actionData as PlaceAction;
 
-        placeAction(actionData, msg.bagSize!, msg.nextPlayerId);
+        console.log("handle play action id to points", actionData.idToPoints);
+        placeAction(actionData, msg.bagSize!, actionData.idToPoints, msg.nextPlayerId);
     };
 
     const handlePass = (msg: ActionToClient) => {

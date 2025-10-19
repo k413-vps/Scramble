@@ -24,7 +24,7 @@ export async function handlePlay(
     const bagSizeBefore = await getBagLength(roomId, redisClient);
 
     const [_1, _2, drawTiles, { nextPlayerId, timeOfLastTurn }] = await Promise.all([
-        placeActionBoardUpdate(redisClient, roomId, actionData.hand),
+        placeActionBoardUpdate(redisClient, roomId, actionData.hand, actionData.idToPoints),
         pointsManaPlayerUpdate(redisClient, roomId, actionData.playerId, actionData.points, actionData.mana),
         drawTilesRedis(redisClient, roomId, actionData.playerId, actionData.hand),
         updateTurnHistoryAction(redisClient, roomId, actionData),

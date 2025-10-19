@@ -199,4 +199,32 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTi
     // }
 };
 
-export default memo(BoardCell, (prevProps, nextProps) => prevProps.cell === nextProps.cell);
+export default memo(BoardCell, (prevProps, nextProps) => {
+    if (prevProps.cell !== nextProps.cell) {
+        return false;
+    }
+
+    if (prevProps.cell?.type === BoardTileType.TILE) {
+        const prevTile = prevProps.cell.tile as Tile;
+        if (nextProps.cell?.type === BoardTileType.TILE) {
+            const nextTile = nextProps.cell.tile as Tile;
+
+            console.log("was this the cause?", prevProps.cell === nextProps.cell, prevTile.points === nextTile.points);
+            console.log(
+                "prevTile points",
+                prevTile.points,
+                "nextTile points",
+                nextTile.points,
+                "prevTile id",
+                prevTile.id,
+                "nextTile id",
+                nextTile.id
+            );
+            if (prevTile.points !== nextTile.points) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+});
