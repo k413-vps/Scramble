@@ -60,7 +60,8 @@ export async function drawTiles(
             position: null,
             placed: false,
             enchantment,
-            id: bag.length
+            id: bag.length,
+            blank: letter === "_",
         };
 
         if (enchantment === Enchantment.NEGATIVE) {

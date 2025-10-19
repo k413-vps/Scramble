@@ -181,11 +181,12 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTi
                     <TileView
                         tile={{
                             letter: "",
-                            points: 0,
+                            points: -1,
                             position: null,
                             placed: false,
                             enchantment: Enchantment.BASE,
                             id: -1,
+                            blank: false,
                         }}
                         size={60}
                     />
