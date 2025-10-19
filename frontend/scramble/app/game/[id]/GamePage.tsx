@@ -20,6 +20,8 @@ import { Socket } from "socket.io-client";
 import ActionsAndSpellsWindow from "@/components/game/[id]/game/ActionsAndSpellsWindow";
 // import TurnHistory from "@/components/game/[id]/game/TurnHistory";
 import GameInfo from "@/components/game/[id]/game/GameInfo";
+import { PlannedToClient } from "shared/types/SocketMessages";
+import { myPlannedTiles } from "@/utils/game/[id]/gameLogic";
 
 type GamePageProps = {
     socket: Socket;
@@ -29,6 +31,7 @@ export default function GamePage({ socket }: GamePageProps) {
     // const hand = useGameStore((state) => state.hand);
     const numRows = useGameStore((state) => state.numRows);
     const numCols = useGameStore((state) => state.numCols);
+    const hand = useGameStore((state) => state.hand);
 
     const handToHand = useGameStore((state) => state.handToHand);
     const handToBoard = useGameStore((state) => state.handToBoard);
@@ -37,6 +40,8 @@ export default function GamePage({ socket }: GamePageProps) {
 
     const [isDragging, setIsDragging] = useState(false);
     const [activeTile, setActiveTile] = useState<Tile | null>(null);
+
+    const isCurrentPlayer = useGameStore((state) => state.isCurrentPlayer());
 
     function handleDragStart(event: DragStartEvent) {
         const dragData = event.active.data.current as DragDataTile;
@@ -67,6 +72,14 @@ export default function GamePage({ socket }: GamePageProps) {
     function handleDragTileDropTray(dropData: DropDataTray, dragData: DragDataTile) {
         if (dragData.dragIndex === null) {
             boardToHand(dragData.tile.position!.row, dragData.tile.position!.col, dropData.dropIndex);
+
+            if (isCurrentPlayer) {
+                const plannedTilesMsg: PlannedToClient = {
+                    plannedTiles: myPlannedTiles(hand),
+                };
+
+                socket.emit("planned_tiles", plannedTilesMsg);
+            }
             return;
         }
         handToHand(dropData.dropIndex, dragData.dragIndex!);
@@ -75,9 +88,25 @@ export default function GamePage({ socket }: GamePageProps) {
     function handleDragTileDropBoard(dropData: DropDataBoard, dragData: DragDataTile) {
         if (dragData.dragIndex === null) {
             boardToBoard(dragData.tile.position!.row, dragData.tile.position!.col, dropData.rowNum, dropData.colNum);
+
+            if (isCurrentPlayer) {
+                const plannedTilesMsg: PlannedToClient = {
+                    plannedTiles: myPlannedTiles(hand),
+                };
+
+                socket.emit("planned_tiles", plannedTilesMsg);
+            }
             return;
         }
         handToBoard(dropData.rowNum, dropData.colNum, dragData.dragIndex);
+
+        const plannedTilesMsg: PlannedToClient = {
+            plannedTiles: myPlannedTiles(hand),
+        };
+
+        if (isCurrentPlayer) {
+            socket.emit("planned_tiles", plannedTilesMsg);
+        }
     }
 
     const prioritizeDroppable: CollisionDetection = (args) => {
@@ -151,7 +180,7 @@ export default function GamePage({ socket }: GamePageProps) {
                             justifyContent: "center",
                         }}
                     >
-                        <TileRack />
+                        <TileRack socket={socket} />
                     </div>
                     <div
                         style={{

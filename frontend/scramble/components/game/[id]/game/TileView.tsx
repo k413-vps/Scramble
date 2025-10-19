@@ -80,7 +80,7 @@ export default function TileView({ tile, size = 48, index = null }: TileViewProp
                     fontSize: size * 0.3,
                 }}
             >
-                {tile.points}
+                {tile.points !== 0 ? tile.points : ""}
             </h2>
 
             <h1

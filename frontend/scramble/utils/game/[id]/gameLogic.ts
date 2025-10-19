@@ -1,5 +1,5 @@
 import { BoardTile, BoardTileType, Dictionary, DictionaryEnum, Enhancement } from "shared/types/game";
-import { Enchantment, Tile } from "shared/types/tiles";
+import { Enchantment, Position, Tile } from "shared/types/tiles";
 import { getDictionary } from "shared/defaults/wordlists/dictionaries";
 import { Score } from "./HelperTypes";
 
@@ -333,4 +333,14 @@ export function calculateScore(
         mana: totalMana,
         wordsFormed: wordsFormed(board, planned),
     };
+}
+
+export function myPlannedTiles(hand: Tile[]): Position[] {
+    const planned: Position[] = [];
+    for (const tile of hand) {
+        if (tile.position) {
+            planned.push(tile.position);
+        }
+    }
+    return planned;
 }

@@ -18,7 +18,7 @@ export interface ServerSideGame {
     currentPlayerId: string;
     bag: string[];
     turnHistory: HistoryElement[];
-    timePerTurn: number; // epoch time, 0 for unlimited
+    timePerTurn: number; // time in seconds per turn, 0 for unlimited
     timeOfLastTurn: number; // epoch time
     dictionary: DictionaryEnum;
     wildMode: boolean; // are tiles permanently boosted?
@@ -83,11 +83,12 @@ export interface SpellHistory extends HistoryElement {
 export enum BoardTileType {
     TILE,
     BLOCKED,
+    PLANNED
 }
 
 export interface BoardTile {
     type: BoardTileType;
-    tile: Tile | Blocked;
+    tile: Tile | Blocked | null;
 }
 
 export interface ServerSidePlayer {

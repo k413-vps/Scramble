@@ -4,19 +4,28 @@ import TileRackDrop from "./TileRackDrop";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Undo2 } from "lucide-react";
+import { Socket } from "socket.io-client";
+import { PlannedToClient } from "shared/types/SocketMessages";
+import { myPlannedTiles } from "@/utils/game/[id]/gameLogic";
 
-export default function TileRack() {
+type TileRackProps = {
+    socket: Socket;
+};
+
+export default function TileRack({ socket }: TileRackProps) {
     const tileSize = 64;
 
     const tiles = useGameStore((state) => state.hand);
 
     const recall = useGameStore((state) => state.recallTiles);
 
-    const rackWidth = tileSize*1.4 * (tiles.length);
+    const rackWidth = tileSize * 1.4 * tiles.length;
 
     const [rendered, setRendered] = useState<{ [key: number]: boolean }>({});
 
     const [initialRenderDone, setInitialRenderDone] = useState(false);
+
+    const isCurrentPlayer = useGameStore((state) => state.isCurrentPlayer());
 
     useEffect(() => {
         setInitialRenderDone(true);
@@ -36,6 +45,14 @@ export default function TileRack() {
     const handleRecall = () => {
         recall();
         setRendered({});
+
+        if (isCurrentPlayer) {
+            const plannedTilesMsg: PlannedToClient = {
+                plannedTiles: myPlannedTiles(tiles),
+            };
+
+            socket.emit("planned_tiles", plannedTilesMsg);
+        }
     };
 
     return (
@@ -70,7 +87,7 @@ export default function TileRack() {
                 </AnimatePresence>
                 {tiles.map((tile, index) => (
                     <motion.div
-                    // i believe the key needs to be different to reanimate on recall
+                        // i believe the key needs to be different to reanimate on recall
                         key={tile.position ? `tile-ind-${index}` : `tile-${tile.id}`}
                         layout
                         initial={
