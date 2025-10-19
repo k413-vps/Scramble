@@ -21,6 +21,8 @@ export interface JoinToClient {
     player: ClientSidePlayer;
     playerId: string;
     owner: boolean;
+    playerTurnOrder: string[];
+    bagSize?: number;
 }
 
 export interface StartToServer {}

@@ -43,12 +43,20 @@ export default function Page() {
 
     const players = useGameStore((state) => state.players);
 
+    const init = useGameStore((state) => state.init);
+    const addPlayer = useGameStore((state) => state.addPlayer);
+    const startGame = useGameStore((state) => state.startGame);
+    const placeAction = useGameStore((state) => state.placeAction);
+    const passAction = useGameStore((state) => state.passAction);
+    const shuffleAction = useGameStore((state) => state.shuffleAction);
+    const writeAction = useGameStore((state) => state.writeAction);
+    const sacrificeAction = useGameStore((state) => state.sacrificeAction);
+
+    const drawTiles = useGameStore((state) => state.drawTiles);
+
     const setPlayerId = useGameStore((state) => state.setPlayerId);
-
     const setTimeOfLastTurn = useGameStore((state) => state.setTimeOfLastTurn);
-
     const setLastToDrawId = useGameStore((state) => state.setLastToDrawId);
-
     const gameOver = useGameStore((state) => state.gameOver);
 
     const [socketConnected, setSocketConnected] = useState(false);
@@ -76,7 +84,7 @@ export default function Page() {
 
     useEffect(() => {
         if (data) {
-            useGameStore.getState().init(data);
+            init(data);
         }
     }, [data]);
 
@@ -88,40 +96,37 @@ export default function Page() {
     } = authClient.useSession();
 
     const handleJoin = (msg: JoinToClient) => {
-        useGameStore.getState().addPlayer(msg.player, msg.playerId);
-        if (msg.owner) {
-            useGameStore.getState().setOwner(msg.playerId);
-        }
+        addPlayer(msg.player, msg.playerId, msg.playerTurnOrder, msg.owner, msg.bagSize);
     };
 
     const handleStart = (msg: StartToClient) => {
-        useGameStore.getState().startGame(msg.turnOrder, msg.hand, msg.bagSize, msg.timeOfLastTurn);
+        startGame(msg.turnOrder, msg.hand, msg.bagSize, msg.timeOfLastTurn);
     };
 
     const handlePlay = (msg: ActionToClient) => {
         const actionData = msg.historyElement.actionData as PlaceAction;
 
-        useGameStore.getState().placeAction(actionData, msg.bagSize!, msg.nextPlayerId);
+        placeAction(actionData, msg.bagSize!, msg.nextPlayerId);
     };
 
     const handlePass = (msg: ActionToClient) => {
         const actionData = msg.historyElement.actionData as PassAction;
-        useGameStore.getState().passAction(actionData, msg.nextPlayerId);
+        passAction(actionData, msg.nextPlayerId);
     };
 
     const handleShuffle = (msg: ActionToClient) => {
         const actionData = msg.historyElement.actionData as ShuffleAction;
-        useGameStore.getState().shuffleAction(actionData, msg.bagSize!, msg.nextPlayerId);
+        shuffleAction(actionData, msg.bagSize!, msg.nextPlayerId);
     };
 
     const handleWrite = (msg: ActionToClient) => {
         const actionData = msg.historyElement.actionData as WriteAction;
-        useGameStore.getState().writeAction(actionData, msg.nextPlayerId);
+        writeAction(actionData, msg.nextPlayerId);
     };
 
     const handleSacrifice = (msg: ActionToClient) => {
         const actionData = msg.historyElement.actionData as SacrificeAction;
-        useGameStore.getState().sacrificeAction(actionData, msg.nextPlayerId);
+        sacrificeAction(actionData, msg.nextPlayerId);
     };
 
     const handleAction = (msg: ActionToClient) => {
@@ -146,8 +151,6 @@ export default function Page() {
         }
 
         setTimeOfLastTurn(msg.timeOfLastTurn);
-        console.log("emptiedBag", msg.emptiedBag);
-        console.log("last to draw", useGameStore.getState().lastToDrawId);
     };
 
     const handleLastDraw = (msg: LastDrawToClient) => {
@@ -156,7 +159,7 @@ export default function Page() {
     };
 
     const handleDrawTiles = (msg: DrawTilesToClient) => {
-        useGameStore.getState().drawTiles(msg.newHand, msg.bagSize);
+        drawTiles(msg.newHand, msg.bagSize);
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

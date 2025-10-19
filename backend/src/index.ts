@@ -53,9 +53,18 @@ import {
     getCurrentPlayerId,
     getLastToDrawId,
     gameOver,
+    getGameState,
+    drawTilesRedis,
 } from "./util/RedisHelper";
 import { parseCreateGameRequest } from "./util/APIParse";
-import { ServerSideGame, ServerSidePlayer, ClientSidePlayer, ActionHistory, HistoryType } from "shared/types/game";
+import {
+    ServerSideGame,
+    ServerSidePlayer,
+    ClientSidePlayer,
+    ActionHistory,
+    HistoryType,
+    GameState,
+} from "shared/types/game";
 import { convertGame, convertPlayer } from "./util/ServerClientTranslation";
 import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
 import { handlePass, handlePlay, handleSacrifice, handleShuffle, handleWrite } from "./util/HandleActions";
@@ -277,7 +286,8 @@ async function main() {
                 purchasedSpells: [],
             };
 
-            const size = await addPlayer(redisClient, serverPlayer, userId, roomId);
+            const playerTurnOrder = await addPlayer(redisClient, serverPlayer, userId, roomId);
+            const size = playerTurnOrder.length;
 
             const clientPlayer: ClientSidePlayer = convertPlayer(serverPlayer);
 
@@ -285,12 +295,33 @@ async function main() {
                 await setOwner(redisClient, userId, roomId);
             }
 
-            const res: JoinToClient = {
-                player: clientPlayer,
-                owner: size === 1,
-                playerId: userId,
-            };
-            io.to(uniqueId).emit("join_game", res);
+            const gameState = await getGameState(roomId, redisClient);
+            if (gameState === GameState.IN_PROGRESS) {
+                const drawResponse = await drawTilesRedis(redisClient, roomId, userId, serverPlayer.hand);
+                const res: JoinToClient = {
+                    player: clientPlayer,
+                    owner: size === 1,
+                    playerId: userId,
+                    playerTurnOrder,
+                    bagSize: drawResponse.bagSize,
+                };
+
+                const newTilesRes: DrawTilesToClient = {
+                    newHand: drawResponse.newHand,
+                    bagSize: drawResponse.bagSize,
+                };
+
+                io.to(uniqueId).emit("join_game", res);
+                socket.emit("draw_tiles", newTilesRes);
+            } else {
+                const res: JoinToClient = {
+                    player: clientPlayer,
+                    owner: size === 1,
+                    playerId: userId,
+                    playerTurnOrder,
+                };
+                io.to(uniqueId).emit("join_game", res);
+            }
         });
 
         socket.on("start_game", async (msg: StartToServer) => {

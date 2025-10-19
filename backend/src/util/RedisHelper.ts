@@ -120,7 +120,6 @@ export async function gameOver(roomId: string, redisClient: RedisClientType): Pr
     await redisClient.json.set(key, "gameState", GameState.COMPLETED);
 }
 
-
 export async function checkPlayerExists(
     redisClient: RedisClientType,
     userId: string,
@@ -148,20 +147,39 @@ export async function getBagLength(roomId: string, redisClient: RedisClientType)
     return result;
 }
 
+export async function getGameState(roomId: string, redisClient: RedisClientType): Promise<GameState> {
+    const key = `games:${roomId}`;
+    const result = JSON.parse(
+        (await redisClient.sendCommand(["JSON.GET", key, "gameState"])) as unknown as string
+    ) as GameState;
+    return result;
+}
+
 export async function addPlayer(
     redisClient: RedisClientType,
     player: ServerSidePlayer,
     playerId: string,
     roomId: string
-): Promise<number> {
+): Promise<string[]> {
     const key = `games:${roomId}`;
 
     const playersPath = `players.${playerId}`;
 
-    await redisClient.json.set(key, playersPath, player as any);
+    const [_, playerTurnOrder] = await Promise.all([
+        redisClient.json.set(key, playersPath, player as any),
+        redisClient.sendCommand(["JSON.GET", key, "playerTurnOrder"]),
+    ]);
 
-    const size = await redisClient.sendCommand(["JSON.OBJLEN", key, "players"]);
-    return size as any as number;
+    const playerTurnOrderArray = JSON.parse(playerTurnOrder as unknown as string) as string[];
+
+    playerTurnOrderArray.push(playerId);
+
+    const [_2, size] = await Promise.all([
+        redisClient.json.set(key, "playerTurnOrder", playerTurnOrderArray),
+        redisClient.sendCommand(["JSON.OBJLEN", key, "players"]),
+    ]);
+
+    return playerTurnOrderArray;
 }
 
 export async function setOwner(redisClient: RedisClientType, userId: string, roomId: string): Promise<void> {
