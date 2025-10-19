@@ -1,12 +1,18 @@
+import { removePlannedFromBoard } from "shared/functions/util";
 import { ClientSideGame, ServerSideGame, ServerSidePlayer, ClientSidePlayer } from "shared/types/game";
 
 export function convertGame(game: ServerSideGame, userId: string): ClientSideGame {
     // const players = game.players.map(convertPlayer);
     const players = Object.fromEntries(Object.entries(game.players).map(([id, player]) => [id, convertPlayer(player)]));
+    const boardCopy = [...game.board];
+
+    if (game.currentPlayerId === userId) {
+        removePlannedFromBoard(boardCopy);
+    }
 
     const ans: ClientSideGame = {
         players: players,
-        board: game.board,
+        board: boardCopy,
         enhancements: game.enhancements,
         currentPlayerId: game.currentPlayerId,
         hand: game.players[userId]?.hand || [],

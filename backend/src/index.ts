@@ -40,6 +40,7 @@ import {
     DrawTilesToClient,
     LastDrawToClient,
     GameOverToClient,
+    PlannedToClient,
 } from "shared/types/SocketMessages";
 
 import {
@@ -55,6 +56,7 @@ import {
     gameOver,
     getGameState,
     drawTilesRedis,
+    setPlannedTiles,
 } from "./util/RedisHelper";
 import { parseCreateGameRequest } from "./util/APIParse";
 import {
@@ -361,6 +363,8 @@ async function main() {
                 }
                 let bagEmptied = false;
 
+                await setPlannedTiles(redisClient, roomId, []); // clear planned tiles on any action
+
                 switch (actionData.type) {
                     case ActionType.PLAY:
                         const { newHand, bagSize, nextPlayerId, timeOfLastTurn, emptiedBag } = await handlePlay(
@@ -508,6 +512,13 @@ async function main() {
                     io.to(uniqueId).emit("game_over", gameOverMsg);
                 }
             });
+        });
+
+        socket.on("planned_tiles", async (msg: PlannedToClient) => {
+            const positions = msg.plannedTiles;
+
+            await setPlannedTiles(redisClient, roomId, positions);
+            socket.to(uniqueId).emit("planned_tiles", msg);
         });
     });
 

@@ -1,6 +1,6 @@
 import { ActionData } from "./actions";
 import { ActionHistory, ClientSidePlayer } from "./game";
-import { Tile } from "./tiles";
+import { Position, Tile } from "./tiles";
 
 export interface TestMessageToClient {
     message: string;
@@ -57,3 +57,11 @@ export interface LastDrawToClient {
 }
 
 export interface GameOverToClient {}
+
+
+export interface PlannedToServer {
+    plannedTiles: Position[]; // all the positions that are currently planned. NOT A DELTA
+}
+export interface PlannedToClient {
+    plannedTiles: Position[]; 
+}

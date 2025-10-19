@@ -1,4 +1,6 @@
 import seedrandom from "seedrandom";
+import { BoardTile, BoardTileType } from "../types/game";
+import { Position } from "../types/tiles";
 
 export function generateSeed(): number {
     const min = 1000000000;
@@ -13,4 +15,15 @@ export function shuffle<T>(array: T[], rng: seedrandom.PRNG): T[] {
         [result[i], result[j]] = [result[j], result[i]];
     }
     return result;
+}
+
+export function removePlannedFromBoard(board: Array<Array<BoardTile | null>>) {
+    for (let row = 0; row < board.length; row++) {
+        for (let col = 0; col < board[row].length; col++) {
+            const tile = board[row][col];
+            if (tile && tile.type === BoardTileType.PLANNED) {
+                board[row][col] = null;
+            }
+        }
+    }
 }

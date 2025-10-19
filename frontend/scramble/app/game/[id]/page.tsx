@@ -26,6 +26,7 @@ import {
     LastDrawToClient,
     StartToClient,
     GameOverToClient,
+    PlannedToClient,
 } from "shared/types/SocketMessages";
 import GamePage from "./GamePage";
 import { ActionType, PassAction, PlaceAction, SacrificeAction, ShuffleAction, WriteAction } from "shared/types/actions";
@@ -58,6 +59,7 @@ export default function Page() {
     const setTimeOfLastTurn = useGameStore((state) => state.setTimeOfLastTurn);
     const setLastToDrawId = useGameStore((state) => state.setLastToDrawId);
     const gameOver = useGameStore((state) => state.gameOver);
+    const setPlannedTiles = useGameStore((state) => state.setPlannedTiles);
 
     const [socketConnected, setSocketConnected] = useState(false);
 
@@ -150,6 +152,7 @@ export default function Page() {
                 break;
         }
 
+        setPlannedTiles([]);
         setTimeOfLastTurn(msg.timeOfLastTurn);
     };
 
@@ -166,6 +169,11 @@ export default function Page() {
     const handleGameOver = (msg: GameOverToClient) => {
         gameOver();
         console.log("game over received");
+    };
+
+    const handlePlannedTiles = (msg: PlannedToClient) => {
+        console.log("planned tiles msg", msg);
+        setPlannedTiles(msg.plannedTiles);
     };
 
     useEffect(() => {
@@ -196,6 +204,7 @@ export default function Page() {
             socket.on("draw_tiles", handleDrawTiles);
             socket.on("last_draw", handleLastDraw);
             socket.on("game_over", handleGameOver);
+            socket.on("planned_tiles", handlePlannedTiles);
 
             setPlayerId(session!.user.id);
         } else if (!authPending) {

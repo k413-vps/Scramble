@@ -1,6 +1,6 @@
 import { createClient, RedisClientType } from "redis";
 import seedrandom from "seedrandom";
-import { shuffle } from "shared/functions/util";
+import { removePlannedFromBoard, shuffle } from "shared/functions/util";
 import {
     ServerSidePlayer,
     ServerSideGame,
@@ -12,7 +12,7 @@ import {
     GameState,
 } from "shared/types/game";
 import { drawTiles } from "./GameLogic";
-import { Tile } from "shared/types/tiles";
+import { Position, Tile } from "shared/types/tiles";
 import { LetterPoints } from "shared/types/misc";
 import { ActionData, ActionType, PlaceAction } from "shared/types/actions";
 import { DrawTilesReturn, RedisSetupReturn, StartGameReturn, TurnHistoryActionReturn } from "./HelperTypes";
@@ -404,4 +404,33 @@ export async function updateTurnHistoryAction(
     }
 
     return { nextPlayerId, timeOfLastTurn };
+}
+
+export async function setPlannedTiles(
+    redisClient: RedisClientType,
+    roomId: string,
+    positions: Position[]
+): Promise<void> {
+    const key = `games:${roomId}`;
+    const plannedBoardTile: BoardTile = {
+        type: BoardTileType.PLANNED,
+        tile: null,
+    };
+
+    const board = (await redisClient.sendCommand(["JSON.GET", key, "board"])) as unknown as string;
+
+    const boardArray: Array<Array<BoardTile | null>> = JSON.parse(board);
+
+    if (positions.length === 0) {
+        return;
+    }
+
+    removePlannedFromBoard(boardArray);
+    for (const pos of positions) {
+        boardArray[pos.row][pos.col] = plannedBoardTile;
+    }
+
+    console.log("setting planned tiles in redis:", positions);
+    await redisClient.sendCommand(["JSON.SET", key, "board", JSON.stringify(boardArray)]);
+    console.log("set planned tiles in redis");
 }

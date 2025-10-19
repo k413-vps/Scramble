@@ -1,6 +1,6 @@
 import { BoardTile, BoardTileType, Enhancement } from "shared/types/game";
 import TileView from "./TileView";
-import { Tile } from "shared/types/tiles";
+import { Tile, Enchantment } from "shared/types/tiles";
 import { memo } from "react";
 import { Sparkle, Star } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
@@ -105,7 +105,6 @@ function getEnchancementLetter(enhancement: Enhancement, size: number) {
 const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTileProps) => {
     const size = 64;
 
-
     const dropData: DropDataBoard = {
         dropType: DropTypes.BOARD,
         rowNum,
@@ -160,6 +159,36 @@ const BoardCell = ({ cell, enhancement, rowNum, colNum, initialRender }: BoardTi
                     transition={{ duration: 0.5, ease: "easeIn" }}
                 >
                     <TileView tile={cell.tile as Tile} size={60} />
+                </motion.div>
+            )}
+
+            {cell && cell.type === BoardTileType.PLANNED && (
+                <motion.div
+                    initial={!initialRender ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                    transition={{ duration: 0.5, ease: "easeIn" }}
+                >
+                    <TileView
+                        tile={{
+                            letter: "",
+                            points: 0,
+                            position: null,
+                            placed: false,
+                            enchantment: Enchantment.BASE,
+                            id: -1,
+                        }}
+                        size={60}
+                    />
                 </motion.div>
             )}
         </div>
