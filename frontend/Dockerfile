@@ -1,14 +1,14 @@
 # build with docker buildx build --build-context frontend=. --build-context shared=../shared -f Dockerfile . -t frontend
 
-FROM node:20-alpine
+FROM oven/bun:1
 
-RUN npm install -g typescript
+RUN bun add -g typescript
 
 WORKDIR /app/shared
 
 COPY --from=shared package.json ./
 
-RUN npm install
+RUN bun install
 
 COPY --from=shared . .
 
@@ -18,12 +18,12 @@ WORKDIR /app/frontend/scramble
 
 COPY --from=frontend scramble/package.json ./
 
-RUN npm i
+RUN bun install
 
 COPY --from=frontend ./scramble .
 
 RUN mv .env.local.prod .env.local
 
-RUN npm run build
+RUN bun run build
 
-CMD ["npm", "run", "start"]
+CMD ["bun", "run", "start"]

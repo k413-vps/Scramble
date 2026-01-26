@@ -31,7 +31,7 @@
         {
             "label": "Run Backend Dev",
             "type": "shell",
-            "command": "npm run dev",
+            "command": "bun run dev",
             "problemMatcher": [],
             "presentation": {
                 "panel": "new",
@@ -46,7 +46,7 @@
         {
             "label": "Run Frontend Dev",
             "type": "shell",
-            "command": "npm run dev",
+            "command": "bun run dev",
             "problemMatcher": [],
             "presentation": {
                 "panel": "new",
