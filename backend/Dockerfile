@@ -1,29 +1,29 @@
 # build with docker buildx build --build-context backend=. --build-context shared=../shared -f Dockerfile . -t backend
 
-FROM oven/bun:1
+FROM node:20-alpine
 
-RUN bun add -g typescript
+RUN npm install -g typescript
 
 WORKDIR /app/shared
 
 COPY --from=shared package.json ./
 
-RUN bun install
+RUN npm install
 
 COPY --from=shared . .
 
-RUN bun link
+RUN tsc 
 
 WORKDIR /app/backend
 
 COPY --from=backend package.json ./
 
-RUN bun install
+RUN npm install
 
 COPY --from=backend . .
 
-RUN bun run build
+RUN npm run build
 
-RUN bunx drizzle-kit generate
+RUN npx drizzle-kit generate
 
-CMD ["bun", "run", "start"]
+CMD ["npm", "run", "start"]
