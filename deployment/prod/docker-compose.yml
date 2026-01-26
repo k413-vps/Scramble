@@ -29,8 +29,9 @@ services:
         condition: service_healthy
     
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:${BACKEND_PORT}${API_PATH}/ping"] # needs to be cmd-shell instead of cmd for the .env variables
-
+      # no wget or curl in this image anymore
+      test: ["CMD", "bun", "-e", "if ((await fetch('http://localhost:${BACKEND_PORT}${API_PATH}/ping')).status !== 200) process.exit(1)"]
+      
       interval: 1200s
       timeout: 3s
       retries: 2

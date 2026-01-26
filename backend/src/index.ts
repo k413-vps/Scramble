@@ -99,7 +99,7 @@ async function main() {
             origin: FRONTEND_URL,
             methods: ["GET", "POST"],
             credentials: true,
-        })
+        }),
     );
 
     app.all("/api/auth/*splat", toNodeHandler(auth));
@@ -370,7 +370,7 @@ async function main() {
                         const { newHand, bagSize, nextPlayerId, timeOfLastTurn, emptiedBag } = await handlePlay(
                             actionData as PlaceAction,
                             roomId,
-                            redisClient
+                            redisClient,
                         );
 
                         bagEmptied = emptiedBag;
@@ -422,7 +422,7 @@ async function main() {
                         const { nextPlayerId: nextPlayerIdPass, timeOfLastTurn: timeOfLastTurnPass } = await handlePass(
                             actionData as PassAction,
                             roomId,
-                            redisClient
+                            redisClient,
                         );
 
                         const historyElementPass: ActionHistory = {
