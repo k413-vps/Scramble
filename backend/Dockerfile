@@ -12,7 +12,7 @@ RUN bun install
 
 COPY --from=shared . .
 
-RUN bun run build
+RUN bun link
 
 WORKDIR /app/backend
 

@@ -12,7 +12,7 @@ RUN bun install
 
 COPY --from=shared . .
 
-RUN tsc
+RUN bun link
 
 WORKDIR /app/frontend/scramble
 
